@@ -1,0 +1,10 @@
+[package]
+name = "nine_dev_site_build"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Build-time asset fingerprinting for 9 Developers websites"
+
+[dependencies]
+percent-encoding = "2.3"
+sha2 = "0.11"

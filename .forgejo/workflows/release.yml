@@ -44,7 +44,7 @@ jobs:
 
   release:
     name: Create release
-    needs: validate
+    needs: [build, security]
     runs-on: node-24
     timeout-minutes: 5
     steps:

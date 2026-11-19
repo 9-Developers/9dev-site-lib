@@ -9,18 +9,24 @@ on:
 
 jobs:
   rust:
-    name: Build
-    runs-on: ci-node-24
+    name: Rust quality checks and build
+    runs-on: ci-rust
     timeout-minutes: 20
     steps:
-      - name: Install workflow prerequisites
-        run: pkg install -y zip
-
       - name: Check out repository
         uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           ref: ${{ forgejo.sha }}
 
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --locked
+
       - name: Build
-        run: zip template.zip ${{ forgejo.workspace }}
+        run: cargo build --locked

@@ -10,6 +10,8 @@ and this project adheres to
 
 ### Added
 
+- Build-time asset fingerprinting with `nine_dev_site_build::assets::fingerprint`.
+
 ### Changed
 
 ### Deprecated
