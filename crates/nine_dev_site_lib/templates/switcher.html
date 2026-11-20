@@ -1,0 +1,15 @@
+<details class="nd-theme">
+  <summary aria-label="Color theme: {{ system }}">
+    <svg width="18" height="18" aria-hidden="true"><use href="{{ icons::DISPLAY.url }}#icon"></use></svg>
+    <svg width="12" height="12" aria-hidden="true"><use href="{{ icons::ANGLE_DOWN.url }}#icon"></use></svg>
+  </summary>
+  <div class="nd-theme-panel" role="group" aria-label="Color theme">
+    <strong>Color theme</strong>
+    {% for (key, label, icon) in self.options() %}
+    <button type="button" data-theme-value="{{ key }}" aria-pressed="{{ key == "system" }}">
+      <svg width="18" height="18" aria-hidden="true"><use href="{{ icon.url }}#icon"></use></svg>
+      <span>{{ label }}</span><span class="nd-theme-check" aria-hidden="true">✓</span>
+    </button>
+    {% endfor %}
+  </div>
+</details>

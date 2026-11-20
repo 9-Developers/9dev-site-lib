@@ -1,0 +1,23 @@
+.nd-theme { position: relative; flex: none; }
+.nd-theme > summary {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; gap: 4px; padding: 0; border: 0; border-radius: .4rem;
+  cursor: pointer; list-style: none;
+}
+.nd-theme > summary::-webkit-details-marker { display: none; }
+.nd-theme[open] > summary svg:last-child { transform: rotate(180deg); }
+.nd-theme :is(summary, button):hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+.nd-theme :is(summary, button):focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.nd-theme-panel {
+  position: absolute; inset-inline-end: 0; top: 100%; z-index: 10; margin-top: .25rem;
+  width: max-content; padding: .5rem; border: 1px solid currentColor; border-radius: .4rem;
+  background: var(--nd-theme-surface, Canvas); color: var(--nd-theme-text, CanvasText);
+}
+.nd-theme-panel > strong { display: block; padding: .25rem .5rem; }
+.nd-theme-panel button {
+  display: flex; align-items: center; gap: .5rem; width: 100%; min-height: 2.5rem;
+  padding: .25rem .5rem; border: 0; border-radius: .25rem; cursor: pointer;
+  color: inherit; background: transparent; font: inherit;
+}
+.nd-theme-check { margin-inline-start: auto; visibility: hidden; }
+.nd-theme button[aria-pressed="true"] .nd-theme-check { visibility: visible; }

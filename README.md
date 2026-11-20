@@ -43,6 +43,23 @@ Use `assets::icons::GIT_BRANCH` for a generic repository link. Include
 `nine_dev_site_lib::THIRD_PARTY_NOTICES` on the site's
 licenses page; brand marks remain subject to their owners' usage guidelines.
 
+## Compact theme switcher
+
+Place `{{ nine_dev_site_lib::switcher::ThemeSwitcher::default()|safe }}` in
+your Askama header. The component escapes its labels before returning HTML.
+To customize one, pass a `ThemeSwitcher { latte: "Yulia (Light)", ..Default::default() }`
+instead. In the page head, load the script synchronously before stylesheets:
+
+```html
+<script src="{{ nine_dev_site_lib::switcher::JS.url }}"></script>
+<link rel="stylesheet" href="{{ nine_dev_site_lib::switcher::CSS.url }}">
+```
+
+Serve both through `assets::lookup`, just like icons. Supply palettes through
+`html[data-theme]` (`latte`, `frappe`, `macchiato`, `mocha`). System follows
+the OS and explicit choices persist under `localStorage.theme`. Set
+`--nd-theme-surface` and `--nd-theme-text` to your panel colors if desired.
+
 ## Fingerprinting static assets
 
 Declare `nine_dev_site_build` under `[build-dependencies]` in the site's

@@ -10,11 +10,6 @@ and this project adheres to
 
 ### Added
 
-- `nine_dev_site_lib::assets::icons`: 20 brand and interface SVG symbols,
-  including Discord and GitHub, served through the existing asset lookup.
-- Runtime access to four embedded theme icons, their fingerprinted URLs, and
-  artwork notices in `nine_dev_site_lib`.
-
 ### Changed
 
 ### Deprecated
@@ -22,6 +17,21 @@ and this project adheres to
 ### Fixed
 
 ### Removed
+
+## nine_dev_site_lib - 0.2.0 (2026-11-20)
+
+### Added
+
+- Compact, keyboard-accessible theme switcher with a fingerprinted script and stylesheet.
+- `nine_dev_site_lib::assets::icons`: 20 brand and interface SVG symbols,
+  including Discord and GitHub, served through the existing asset lookup.
+  artwork notices in `nine_dev_site_lib`.
+
+## nine_dev_site_lib - 0.1.0 (2026-11-20)
+
+### Added
+
+- Runtime access to four embedded theme icons, their fingerprinted URLs, and
 
 ## nine_dev_site_build - 0.1.1 (2026-11-20)
 

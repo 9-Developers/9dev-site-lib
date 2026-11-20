@@ -18,5 +18,11 @@ fn main() -> io::Result<()> {
         let asset = fingerprint(&logical_path, &fs::read(path)?);
         println!("cargo::rustc-env=ICON_URL_{name}={}", asset.url);
     }
+    for name in ["theme-switcher.css", "theme-switcher.js"] {
+        let path = format!("assets/{name}");
+        println!("cargo::rerun-if-changed={path}");
+        let asset = fingerprint(name, &fs::read(path)?);
+        println!("cargo::rustc-env=SWITCHER_URL_{name}={}", asset.url);
+    }
     Ok(())
 }

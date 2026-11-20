@@ -41,6 +41,7 @@ pub mod icons {
         ANILIST => "anilist.svg",
         BLUESKY => "bluesky.svg",
         DISCORD => "discord.svg",
+        DISPLAY => "display.svg",
         DOWNLOAD => "download.svg",
         EMAIL => "email.svg",
         FACEBOOK => "facebook.svg",
@@ -77,6 +78,7 @@ pub fn lookup(path: &str) -> Option<&'static Asset> {
         .iter()
         .chain(theme::ALL)
         .copied()
+        .chain([&crate::switcher::CSS, &crate::switcher::JS])
         .find(|asset| asset.url == path)
 }
 

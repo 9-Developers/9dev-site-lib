@@ -82,6 +82,7 @@ def icons():
         "angle-down",
         "bluesky",
         "discord",
+        "display",
         "facebook",
         "github",
         "gitlab",
