@@ -3,14 +3,13 @@
 import argparse
 from pathlib import Path
 import subprocess
-from urllib.request import urlopen
+from urllib.request import HTTPSHandler, OpenerDirector
 import xml.etree.ElementTree as ET
 
 
 DEST = (
     Path(__file__).resolve().parents[1] / "crates/nine_dev_site_lib/assets/images/icons"
 )
-RAW = "https://raw.githubusercontent.com/"
 BOOTSTRAP = "twbs/icons/ce0e49dd063243118a115f17ad1fe1fe7576d552/icons/"
 MONO = "mono-company/mono-icons/43fac75e3d5ff38a55588e8c94a02ed96003a6ac/svg/"
 ANILIST = "AniList/submission-manual/c30e98afdb152869756458e94a3054041d107305/docs/.vuepress/public/logo.png"
@@ -18,7 +17,14 @@ NS = "{http://www.w3.org/2000/svg}"
 
 
 def fetch(path):
-    with urlopen(RAW + path, timeout=30) as response:
+    # Register only HTTPS; pinned upstream assets should never need a redirect.
+    opener = OpenerDirector()
+    opener.add_handler(HTTPSHandler())
+    with opener.open(
+        "https://raw.githubusercontent.com/" + path, timeout=30
+    ) as response:
+        if response.status != 200:
+            raise RuntimeError(f"Failed to fetch {path}: HTTP {response.status}")
         return response.read()
 
 

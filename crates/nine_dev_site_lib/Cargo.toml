@@ -1,6 +1,6 @@
 [package]
 name = "nine_dev_site_lib"
-version = "0.2.0"
+version = "0.2.1"
 edition.workspace = true
 description = "Embedded brand, interface, and theme icons with fingerprinted asset lookup"
 repository = "https://git.9dev.tech/9-Developers/9dev-site-lib"
