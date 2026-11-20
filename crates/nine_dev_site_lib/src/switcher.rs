@@ -4,12 +4,12 @@ use crate::assets::{Asset, icons, theme};
 use askama::Template;
 
 pub static CSS: Asset = Asset {
-    url: env!("SWITCHER_URL_theme-switcher.css"),
+    url: env!("ASSET_URL_theme-switcher.css"),
     content_type: "text/css",
     bytes: include_bytes!("../assets/theme-switcher.css"),
 };
 pub static JS: Asset = Asset {
-    url: env!("SWITCHER_URL_theme-switcher.js"),
+    url: env!("ASSET_URL_theme-switcher.js"),
     content_type: "text/javascript",
     bytes: include_bytes!("../assets/theme-switcher.js"),
 };

@@ -24,8 +24,15 @@ macro_rules! icons {
     };
 }
 
-/// Catppuccin flavor icons. Append `#icon` to the URL for an SVG `<use>` element.
+/// Catppuccin color palettes and flavor icons. Append `#icon` only to icon URLs.
 pub mod theme {
+    /// Stylesheet defining `--ctp-*` colors for each `data-theme` flavor, with Mocha as the default.
+    pub static PALETTE: super::Asset = super::Asset {
+        url: env!("ASSET_URL_catppuccin.css"),
+        content_type: "text/css",
+        bytes: include_bytes!("../assets/catppuccin.css"),
+    };
+
     icons! {
         LATTE => "latte.svg",
         FRAPPE => "frappe.svg",
@@ -78,7 +85,7 @@ pub fn lookup(path: &str) -> Option<&'static Asset> {
         .iter()
         .chain(theme::ALL)
         .copied()
-        .chain([&crate::switcher::CSS, &crate::switcher::JS])
+        .chain([&theme::PALETTE, &crate::switcher::CSS, &crate::switcher::JS])
         .find(|asset| asset.url == path)
 }
 
@@ -109,6 +116,20 @@ mod tests {
             count += 1;
         }
         assert_eq!(count, super::icons::ALL.len() + theme::ALL.len());
+    }
+
+    #[test]
+    fn palette_is_served_only_at_its_content_address() {
+        let palette = &theme::PALETTE;
+        let hash = Sha256::digest(palette.bytes);
+        let prefix = u64::from_be_bytes(hash[..8].try_into().unwrap());
+        let url = format!("/static/catppuccin.{prefix:016x}.css");
+        assert_eq!(palette.url, url);
+        let served = lookup(&url).unwrap();
+        assert_eq!(served.content_type, "text/css");
+        assert_eq!(served.bytes, palette.bytes);
+        assert!(lookup("/static/catppuccin.css").is_none());
+        assert!(lookup("/static/catppuccin.0000000000000000.css").is_none());
     }
 
     #[test]

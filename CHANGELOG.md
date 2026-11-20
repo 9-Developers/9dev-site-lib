@@ -18,6 +18,12 @@ and this project adheres to
 
 ### Removed
 
+## nine_dev_site_lib - 0.3.0 (2026-11-20)
+
+### Added
+
+- `nine_dev_site_lib::assets::theme::PALETTE`: a fingerprinted stylesheet with all four Catppuccin flavors.
+
 ## nine_dev_site_lib - 0.2.0 (2026-11-20)
 
 ### Added

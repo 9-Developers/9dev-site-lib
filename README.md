@@ -7,7 +7,7 @@
 [![Release][badge-releases]][link-releases]
 
 A Cargo workspace for Rust websites. Use [`nine_dev_site_lib`](crates/nine_dev_site_lib/)
-to serve shared icons, and [`nine_dev_site_build`](crates/nine_dev_site_build/)
+to serve shared icons, Catppuccin colors, and a theme switcher, and [`nine_dev_site_build`](crates/nine_dev_site_build/)
 to fingerprint a site's own assets at build time.
 
 ## Using the shared icons
@@ -43,6 +43,19 @@ Use `assets::icons::GIT_BRANCH` for a generic repository link. Include
 `nine_dev_site_lib::THIRD_PARTY_NOTICES` on the site's
 licenses page; brand marks remain subject to their owners' usage guidelines.
 
+## Catppuccin palette
+
+Link the palette before your site's stylesheet and serve it through `assets::lookup`:
+
+```html
+<link rel="stylesheet" href="{{ nine_dev_site_lib::assets::theme::PALETTE.url }}">
+```
+
+Use `var(--ctp-base)` for a background, `var(--ctp-text)` for text, or any of
+the 26 `--ctp-*` colors. Set `data-theme` on `<html>` to `latte`, `frappe`,
+`macchiato`, or `mocha`. A missing or unrecognized theme defaults to Mocha.
+The palette works without JavaScript or Tailwind.
+
 ## Compact theme switcher
 
 Place `{{ nine_dev_site_lib::switcher::ThemeSwitcher::default()|safe }}` in
@@ -55,8 +68,8 @@ instead. In the page head, load the script synchronously before stylesheets:
 <link rel="stylesheet" href="{{ nine_dev_site_lib::switcher::CSS.url }}">
 ```
 
-Serve both through `assets::lookup`, just like icons. Supply palettes through
-`html[data-theme]` (`latte`, `frappe`, `macchiato`, `mocha`). System follows
+Serve both through `assets::lookup`, just like icons. The switcher sets
+`html[data-theme]` for the shared palette or your own stylesheet. System follows
 the OS and explicit choices persist under `localStorage.theme`. Set
 `--nd-theme-surface` and `--nd-theme-text` to your panel colors if desired.
 
