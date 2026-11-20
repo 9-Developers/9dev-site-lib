@@ -7,8 +7,9 @@
 [![Release][badge-releases]][link-releases]
 
 A Cargo workspace for Rust websites. Use [`nine_dev_site_lib`](crates/nine_dev_site_lib/)
-to serve shared icons, Catppuccin colors, and a theme switcher, and [`nine_dev_site_build`](crates/nine_dev_site_build/)
-to fingerprint a site's own assets at build time.
+to serve shared icons, Catppuccin colors, a theme switcher, and optional HTMX.
+Use [`nine_dev_site_build`](crates/nine_dev_site_build/) to fingerprint a site's
+own assets at build time.
 
 ## Using the shared icons
 
@@ -72,6 +73,24 @@ Serve both through `assets::lookup`, just like icons. The switcher sets
 `html[data-theme]` for the shared palette or your own stylesheet. System follows
 the OS and explicit choices persist under `localStorage.theme`. Set
 `--nd-theme-surface` and `--nd-theme-text` to your panel colors if desired.
+
+## Serving HTMX
+
+To serve HTMX 4.0.0 from your own site, enable the `htmx` feature:
+
+```toml
+[dependencies]
+nine_dev_site_lib = { version = "0.4", features = ["htmx"] }
+```
+
+Reference the script's fingerprinted URL in your Askama template:
+
+```html
+<script src="{{ nine_dev_site_lib::assets::htmx::JS.url }}"></script>
+```
+
+The same `/static/` handler that calls `assets::lookup` serves the script.
+Set any `htmx-config` options in your template before the script tag.
 
 ## Fingerprinting static assets
 

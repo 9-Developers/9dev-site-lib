@@ -18,6 +18,12 @@ and this project adheres to
 
 ### Removed
 
+## nine_dev_site_lib - 0.4.0 (2026-11-20)
+
+### Added
+
+- Opt-in `htmx` feature: serve HTMX 4.0.0 at `assets::htmx::JS.url` through `assets::lookup`.
+
 ## nine_dev_site_lib - 0.3.0 (2026-11-20)
 
 ### Added

@@ -68,6 +68,17 @@ pub mod icons {
     }
 }
 
+/// Vendored HTMX browser script, available with the `htmx` feature.
+#[cfg(feature = "htmx")]
+pub mod htmx {
+    /// Load this script from `JS.url` in the site's template.
+    pub static JS: super::Asset = super::Asset {
+        url: env!("ASSET_URL_htmx.min.js"),
+        content_type: "text/javascript",
+        bytes: include_bytes!("../assets/htmx.min.js"),
+    };
+}
+
 /// Look up the exact, encoded request path, including `/static/`.
 ///
 /// Pass `uri.path()` from the site's HTTP handler. Unknown and stale paths return `None`.
@@ -85,7 +96,13 @@ pub fn lookup(path: &str) -> Option<&'static Asset> {
         .iter()
         .chain(theme::ALL)
         .copied()
-        .chain([&theme::PALETTE, &crate::switcher::CSS, &crate::switcher::JS])
+        .chain([
+            &theme::PALETTE,
+            &crate::switcher::CSS,
+            &crate::switcher::JS,
+            #[cfg(feature = "htmx")]
+            &htmx::JS,
+        ])
         .find(|asset| asset.url == path)
 }
 
@@ -93,6 +110,28 @@ pub fn lookup(path: &str) -> Option<&'static Asset> {
 mod tests {
     use super::{lookup, theme};
     use sha2::{Digest, Sha256};
+
+    // Preserve the URL already used by Fulla and ixirsii for the upstream 4.0.0 bytes.
+    const HTMX_URL: &str = "/static/htmx.min.e484d9171a9db30a.js";
+
+    #[cfg(feature = "htmx")]
+    #[test]
+    fn htmx_serves_the_pinned_upstream_script_at_its_existing_url() {
+        assert_eq!(super::htmx::JS.url, HTMX_URL);
+        let asset = lookup(HTMX_URL).unwrap();
+        assert_eq!(asset.content_type, "text/javascript");
+        let digest = Sha256::digest(asset.bytes);
+        let prefix = u64::from_be_bytes(digest[..8].try_into().unwrap());
+        assert_eq!(asset.url, format!("/static/htmx.min.{prefix:016x}.js"));
+        assert!(lookup("/static/htmx.min.js").is_none());
+        assert!(lookup("/static/htmx.min.0000000000000000.js").is_none());
+    }
+
+    #[cfg(not(feature = "htmx"))]
+    #[test]
+    fn htmx_is_not_served_without_the_feature() {
+        assert!(lookup(HTMX_URL).is_none());
+    }
 
     #[test]
     fn every_packaged_svg_is_served_at_its_content_address() {
