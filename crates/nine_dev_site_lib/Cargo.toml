@@ -1,0 +1,14 @@
+[package]
+name = "nine_dev_site_lib"
+version.workspace = true
+edition.workspace = true
+description = "Embedded theme icons and fingerprinted asset lookup for 9 Developers websites"
+repository = "https://git.9dev.tech/9-Developers/9dev-site-lib"
+# Rust code is BSD-3-Clause; the bundled Fluent Emoji artwork is MIT.
+license = "BSD-3-Clause AND MIT"
+
+[build-dependencies]
+nine_dev_site_build = { path = "../nine_dev_site_build", version = "0.1.1" }
+
+[dev-dependencies]
+sha2 = "0.11"

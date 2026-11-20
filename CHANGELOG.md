@@ -10,7 +10,8 @@ and this project adheres to
 
 ### Added
 
-- Build-time asset fingerprinting with `nine_dev_site_build::assets::fingerprint`.
+- Runtime access to four embedded theme icons, their fingerprinted URLs, and
+  artwork notices in `nine_dev_site_lib`.
 
 ### Changed
 
@@ -19,3 +20,15 @@ and this project adheres to
 ### Fixed
 
 ### Removed
+
+## nine_dev_site_build - 0.1.1 (2026-11-20)
+
+### Added
+
+- Crate license
+
+## nine_dev_site_build - 0.1.0 (2026-11-19)
+
+### Added
+
+- Build-time asset fingerprinting with `nine_dev_site_build::assets::fingerprint`.

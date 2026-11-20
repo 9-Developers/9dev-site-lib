@@ -6,10 +6,38 @@
 [![Security][badge-workflow-security]][link-workflow-security]
 [![Release][badge-releases]][link-releases]
 
-A Cargo workspace for shared Rust utilities used by 9 Developers websites.
-Its first member, [`nine_dev_site_build`](crates/nine_dev_site_build/), is for
-site build scripts. A separate `nine_dev_site_lib` runtime crate is planned
-for shared assets and components.
+A Cargo workspace for Rust websites. Use [`nine_dev_site_lib`](crates/nine_dev_site_lib/)
+to serve shared theme icons, and [`nine_dev_site_build`](crates/nine_dev_site_build/)
+to fingerprint a site's own assets at build time.
+
+## Using the shared theme icons
+
+Add `nine_dev_site_lib` to the site's `[dependencies]`. Templates can use
+`assets::theme::{LATTE, FRAPPE, MACCHIATO, MOCHA}`. For example, pass
+`nine_dev_site_lib::assets::theme::LATTE.url` as `latte_url` to an HTML template:
+
+```html
+<svg aria-hidden="true" width="16" height="16"><use href="{{ latte_url }}#icon"></use></svg>
+```
+
+In the site's `/static/` handler, pass the full request path to `assets::lookup`.
+For example, inside an Axum handler returning `Response`:
+
+```rust
+use axum::{http::header, response::IntoResponse};
+use nine_dev_site_lib::assets;
+
+if let Some(icon) = assets::lookup(uri.path()) {
+    return ([
+        (header::CONTENT_TYPE, icon.content_type),
+        (header::CACHE_CONTROL, "public, max-age=31536000, immutable"),
+    ], icon.bytes).into_response();
+}
+// Continue with the site's own asset lookup.
+```
+
+Include `nine_dev_site_lib::THIRD_PARTY_NOTICES` on the site's licenses page
+when distributing the icons.
 
 ## Fingerprinting static assets
 
