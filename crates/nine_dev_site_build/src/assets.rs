@@ -2,6 +2,7 @@
 
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use sha2::{Digest, Sha256};
+use std::{fs, io, path::Path};
 
 // Preserve URL path separators and RFC 3986 unreserved characters.
 const PATH_ENCODE_SET: &AsciiSet = &NON_ALPHANUMERIC
@@ -18,6 +19,54 @@ pub struct Fingerprint {
     pub hash: String,
     /// The percent-encoded `/static/` URL, without a query or fragment.
     pub url: String,
+}
+
+/// A regular file under the caller's public directory.
+pub struct FileAsset {
+    /// Original UTF-8 filename relative to the root, with `/` separators.
+    pub source: String,
+    pub fingerprint: Fingerprint,
+}
+
+/// Fingerprint a directory in source-path order. Includes dotfiles; the site
+/// chooses which paths to publish. Reject links and non-portable filenames
+/// rather than indexing a different file or leaving the public directory.
+pub fn walk(root: &Path) -> io::Result<Vec<FileAsset>> {
+    fn visit(dir: &Path, prefix: &str, assets: &mut Vec<FileAsset>) -> io::Result<()> {
+        for entry in fs::read_dir(dir)? {
+            let entry = entry?;
+            let name = entry.file_name().into_string().map_err(|_| {
+                io::Error::new(io::ErrorKind::InvalidData, "asset filename must be UTF-8")
+            })?;
+            let source = format!("{prefix}{name}");
+            if name.contains('\\') || name.chars().any(char::is_control) {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("invalid asset path: {source:?}"),
+                ));
+            }
+            let kind = entry.file_type()?;
+            if kind.is_dir() {
+                visit(&entry.path(), &format!("{source}/"), assets)?;
+            } else if kind.is_file() {
+                let fingerprint = fingerprint(&source, &fs::read(entry.path())?);
+                assets.push(FileAsset {
+                    source,
+                    fingerprint,
+                });
+            } else {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("not a regular asset: {source}"),
+                ));
+            }
+        }
+        Ok(())
+    }
+    let mut assets = Vec::new();
+    visit(root, "", &mut assets)?;
+    assets.sort_unstable_by(|a, b| a.source.cmp(&b.source));
+    Ok(assets)
 }
 
 /// Fingerprint the final bytes that the site will serve.
@@ -60,7 +109,30 @@ pub fn fingerprint(logical_path: &str, bytes: &[u8]) -> Fingerprint {
 
 #[cfg(test)]
 mod tests {
-    use super::fingerprint;
+    use super::{fingerprint, walk};
+    use std::path::Path;
+
+    #[test]
+    fn directory_walk_keeps_raw_sources_and_canonical_urls() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/public");
+        let files = walk(&root).unwrap();
+        let sources: Vec<_> = files.iter().map(|file| file.source.as_str()).collect();
+        assert_eq!(sources, [".well-known/example.txt", "images/Two Words.svg"]);
+        let image = &files[1];
+        assert_eq!(
+            image.fingerprint,
+            fingerprint(
+                &image.source,
+                include_bytes!("../tests/public/images/Two Words.svg")
+            )
+        );
+        assert!(
+            image
+                .fingerprint
+                .url
+                .starts_with("/static/images/Two%20Words.")
+        );
+    }
 
     #[test]
     fn changing_the_served_bytes_changes_the_url() {

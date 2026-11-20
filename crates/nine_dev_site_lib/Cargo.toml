@@ -1,6 +1,6 @@
 [package]
 name = "nine_dev_site_lib"
-version = "0.4.0"
+version = "0.5.0"
 edition.workspace = true
 description = "Fingerprinted browser assets: icons, Catppuccin palettes, a theme switcher, and optional HTMX"
 repository = "https://git.9dev.tech/9-Developers/9dev-site-lib"
@@ -9,15 +9,18 @@ license = "BSD-3-Clause AND MIT AND 0BSD"
 
 [features]
 htmx = []
+axum = ["dep:axum", "dep:mime_guess"]
 
 [dependencies]
+axum = { version = "0.8", default-features = false, optional = true }
+mime_guess = { version = "2", optional = true }
 askama = { version = "0.16", default-features = false, features = [
   "derive",
   "std",
 ] }
 
 [build-dependencies]
-nine_dev_site_build = { path = "../nine_dev_site_build", version = "0.1.1" }
+nine_dev_site_build = { path = "../nine_dev_site_build", version = "0.2" }
 
 [dev-dependencies]
 sha2 = "0.11"

@@ -80,7 +80,7 @@ To serve HTMX 4.0.0 from your own site, enable the `htmx` feature:
 
 ```toml
 [dependencies]
-nine_dev_site_lib = { version = "0.4", features = ["htmx"] }
+nine_dev_site_lib = { version = "0.5", features = ["htmx"] }
 ```
 
 Reference the script's fingerprinted URL in your Askama template:
@@ -110,6 +110,39 @@ assert_eq!(asset.url, "/static/images/icons/latte.ba7816bf8f01cfea.svg");
 Use the returned URL as-is in the site's asset table. For an SVG symbol,
 append `#icon` in the template. The site chooses which files to embed, which
 routes use immutable URLs, and which stable routes use the hash as an ETag.
+
+## Building a directory of assets
+
+With `nine_dev_site_build = "0.2"` as a build dependency and the standalone
+`tailwindcss` CLI on `PATH`, a site's `build.rs` can compile CSS and then
+fingerprint everything under its public root:
+
+```rust
+use nine_dev_site_build::{assets, tailwind};
+use std::path::{Path, PathBuf};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    for path in ["src/style", "templates", "public"] {
+        println!("cargo:rerun-if-changed={path}");
+    }
+    let scratch = PathBuf::from(std::env::var("OUT_DIR")?).join("main.css");
+    tailwind::compile(Path::new("src/style/main.css"), Path::new("public/main.css"), &scratch)?;
+    for file in assets::walk(Path::new("public"))? {
+        println!("cargo:rustc-env=ASSET_URL_{}={}", file.source, file.fingerprint.url);
+    }
+    Ok(())
+}
+```
+
+`walk` returns entries in source-path order, including nested directories.
+Use `file.fingerprint.hash` when generating an image index or an ETag.
+`catalog::Catalog` in `nine_dev_site_lib` resolves site-defined entries by
+source filename for templates or by exact encoded URL for requests.
+
+Enable the runtime crate's optional `axum` feature to construct responses:
+use `serving::response(bytes, mime, serving::IMMUTABLE)` for a fingerprinted
+URL, or `serving::revalidate(bytes, mime, hash, &headers)` in a stable URL's
+GET/HEAD handler. A matching `If-None-Match` returns `304 Not Modified`.
 
 [badge-discord]: https://img.shields.io/discord/452233740408717313?color=b4befe&label=discord&labelColor=1e1e2e&logo=discord&style=flat
 [link-discord]: https://discord.gg/KTgshSbEUU

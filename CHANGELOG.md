@@ -18,6 +18,20 @@ and this project adheres to
 
 ### Removed
 
+## nine_dev_site_lib - 0.5.0 (2026-11-20)
+
+### Added
+
+- Exact lookup for site-owned catalogs and opt-in `axum`
+  responses for immutable files and stable files with ETag revalidation.
+
+## nine_dev_site_build - 0.2.0 (2026-11-20)
+
+### Added
+
+- Standalone Tailwind compilation with write-only-if-changed CSS,
+  and a deterministic directory walker returning source paths, hashes and URLs.
+
 ## nine_dev_site_lib - 0.4.0 (2026-11-20)
 
 ### Added
