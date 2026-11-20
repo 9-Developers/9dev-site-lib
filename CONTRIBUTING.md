@@ -194,7 +194,8 @@ For subsequent releases, bump the shared version in `Cargo.toml`, update
 `Cargo.lock`, and merge both to `main`. Tag that commit with the matching
 version (for example, `git tag v0.1.1` and `git push origin v0.1.1`).
 After build and security checks pass, Forgejo publishes the workspace to
-crates.io and then creates the Forgejo release.
+crates.io and then creates the Forgejo release. If publication is interrupted,
+rerun the workflow for the same tag; it skips versions already on crates.io.
 
 ## Attribution
 

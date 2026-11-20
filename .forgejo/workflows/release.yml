@@ -52,23 +52,10 @@ jobs:
           persist-credentials: false
           ref: ${{ forgejo.sha }}
 
-      - name: Verify package versions match the tag
-        run: |
-          cargo metadata --locked --no-deps --format-version 1 > "$RUNNER_TEMP/packages.json"
-          node - "$RUNNER_TEMP/packages.json" <<'JS'
-          const { packages } = require(process.argv[2]);
-          for (const pkg of packages) {
-            if (pkg.publish && !pkg.publish.includes('crates-io')) continue;
-            if (`v${pkg.version}` !== process.env.FORGEJO_REF_NAME) {
-              throw new Error(`${pkg.name} version ${pkg.version} does not match ${process.env.FORGEJO_REF_NAME}`);
-            }
-          }
-          JS
-
-      - name: Publish to crates.io
+      - name: Publish missing crate versions to crates.io
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish --workspace --registry crates-io --locked
+        run: node .forgejo/scripts/publish.mjs
 
   release:
     name: Create release
