@@ -190,12 +190,15 @@ Store the crates.io `publish-update` token in the Forgejo Actions secret
 `CARGO_REGISTRY_TOKEN`. Publish the first version of each new crate manually
 with a `publish-new` credential (`cargo publish --locked -p <crate-name>`).
 
-For subsequent releases, bump the shared version in `Cargo.toml`, update
-`Cargo.lock`, and merge both to `main`. Tag that commit with the matching
-version (for example, `git tag v0.1.1` and `git push origin v0.1.1`).
-After build and security checks pass, Forgejo publishes the workspace to
-crates.io and then creates the Forgejo release. If publication is interrupted,
-rerun the workflow for the same tag; it skips versions already on crates.io.
+Each crate owns its version in `crates/<crate-name>/Cargo.toml`. For subsequent
+releases, bump only the crate being released, update the workspace `Cargo.lock`,
+and merge to `main`. Tag that commit as `<crate-name>-v<major>.<minor>.<patch>`
+(for example, `nine_dev_site_build-v0.1.2`). After build and security checks
+pass, Forgejo publishes only the tagged crate and creates the release. Retrying
+the same tag skips publication if that version is already on crates.io.
+
+If the runtime crate needs a new build-crate version, publish the build crate
+first and update the runtime crate's `[build-dependencies]` requirement.
 
 ## Attribution
 

@@ -3,12 +3,13 @@ name: Release
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "nine_dev_site_build-v*.*.*"
+      - "nine_dev_site_lib-v*.*.*"
 
 jobs:
   validate:
     name: Validate release
-    runs-on: ci-node-24
+    runs-on: ci-rust
     timeout-minutes: 5
     steps:
       - name: Check out repository
@@ -19,11 +20,7 @@ jobs:
           ref: ${{ forgejo.sha }}
 
       - name: Validate release tag
-        run: |
-          if [[ ! "$FORGEJO_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-            echo "Invalid release tag: $FORGEJO_REF_NAME"
-            exit 1
-          fi
+        run: node .forgejo/scripts/publish.mjs check
 
       - name: Verify release is on main
         run: |
@@ -41,7 +38,7 @@ jobs:
     uses: ./.forgejo/workflows/security.yml
 
   publish:
-    name: Publish workspace to crates.io
+    name: Publish tagged crate to crates.io
     needs: [build, security]
     runs-on: ci-rust
     timeout-minutes: 20
@@ -52,10 +49,10 @@ jobs:
           persist-credentials: false
           ref: ${{ forgejo.sha }}
 
-      - name: Publish missing crate versions to crates.io
+      - name: Publish if the tagged version is missing
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: node .forgejo/scripts/publish.mjs
+        run: node .forgejo/scripts/publish.mjs publish
 
   release:
     name: Create release
