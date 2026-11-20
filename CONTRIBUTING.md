@@ -30,6 +30,7 @@ for all involved. The community looks forward to your contributions. 🎉
 - [Improving The Documentation](#improving-the-documentation)
 - [Style Guides](#style-guides)
 - [Commit Messages](#commit-messages)
+- [Publishing crates](#publishing-crates)
 
 ## Code of Conduct
 
@@ -182,6 +183,18 @@ Document any project-specific conventions in this section.
 ### Commit Messages
 
 Template uses [Semantic commit messages][8].
+
+## Publishing crates
+
+Store the crates.io `publish-update` token in the Forgejo Actions secret
+`CARGO_REGISTRY_TOKEN`. Publish the first version of each new crate manually
+with a `publish-new` credential (`cargo publish --locked -p <crate-name>`).
+
+For subsequent releases, bump the shared version in `Cargo.toml`, update
+`Cargo.lock`, and merge both to `main`. Tag that commit with the matching
+version (for example, `git tag v0.1.1` and `git push origin v0.1.1`).
+After build and security checks pass, Forgejo publishes the workspace to
+crates.io and then creates the Forgejo release.
 
 ## Attribution
 
