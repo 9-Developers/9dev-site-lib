@@ -39,8 +39,6 @@ jobs:
   security:
     needs: validate
     uses: ./.forgejo/workflows/security.yml
-    secrets:
-      SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
 
   publish:
     name: Publish workspace to crates.io
