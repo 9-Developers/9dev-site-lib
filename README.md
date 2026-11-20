@@ -144,6 +144,29 @@ use `serving::response(bytes, mime, serving::IMMUTABLE)` for a fingerprinted
 URL, or `serving::revalidate(bytes, mime, hash, &headers)` in a stable URL's
 GET/HEAD handler. A matching `If-None-Match` returns `304 Not Modified`.
 
+### Catppuccin utilities in Tailwind v4
+
+With `nine_dev_site_build` 0.2.1 or later, add this before `tailwind::compile`
+in `build.rs`:
+
+```rust
+tailwind::write_catppuccin_aliases(Path::new("src/style/catppuccin.aliases.css"))?;
+```
+
+Ignore that generated file in Git. In `src/style/main.css`, import it after
+Tailwind and point class discovery at your site's templates:
+
+```css
+@import "tailwindcss" source(none);
+@import "./catppuccin.aliases.css";
+@source "../../templates";
+```
+
+This makes utilities like `bg-ctp-base` and `text-ctp-blue` available in
+templates and in `@apply`. Add other `@source` directories if they contain
+utility classes. Load the [palette](#catppuccin-palette) before your compiled
+CSS so these colors follow the selected flavor.
+
 [badge-discord]: https://img.shields.io/discord/452233740408717313?color=b4befe&label=discord&labelColor=1e1e2e&logo=discord&style=flat
 [link-discord]: https://discord.gg/KTgshSbEUU
 [badge-bsd-3]: https://img.shields.io/badge/License-BSD_3--Clause-89b4fa?labelColor=1e1e2e&logo=bsd&logoColor=white&style=flat

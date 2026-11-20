@@ -2,6 +2,16 @@
 
 use std::{fs, io, path::Path, process::Command};
 
+/// Materialize the optional Tailwind v4 `@theme inline` bindings for the runtime
+/// Catppuccin palette. Import this generated file from the site's CSS entrypoint.
+/// The parent directory must exist. Identical files are left untouched.
+pub fn write_catppuccin_aliases(destination: &Path) -> io::Result<()> {
+    write_if_changed(
+        destination,
+        include_bytes!("../assets/catppuccin.aliases.css"),
+    )
+}
+
 /// Write minified CSS only when the final bytes change, so a watched output
 /// directory does not retrigger the build on every invocation. Pass a
 /// separate scratch file in `OUT_DIR`: Tailwind's stdout mode appends a
@@ -22,10 +32,13 @@ pub fn compile(input: &Path, destination: &Path, scratch: &Path) -> io::Result<(
             String::from_utf8_lossy(&output.stderr)
         )));
     }
-    let css = fs::read(scratch)?;
+    write_if_changed(destination, &fs::read(scratch)?)
+}
+
+fn write_if_changed(destination: &Path, bytes: &[u8]) -> io::Result<()> {
     match fs::read(destination) {
-        Ok(existing) if existing == css => Ok(()),
+        Ok(existing) if existing == bytes => Ok(()),
         Err(e) if e.kind() != io::ErrorKind::NotFound => Err(e),
-        _ => fs::write(destination, css),
+        _ => fs::write(destination, bytes),
     }
 }
