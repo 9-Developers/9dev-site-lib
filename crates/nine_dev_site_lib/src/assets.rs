@@ -11,24 +11,53 @@ pub struct Asset {
     pub bytes: &'static [u8],
 }
 
-/// Catppuccin flavor icons. Append `#icon` to the URL for an SVG `<use>` element.
-pub mod theme {
-    use super::Asset;
-
-    macro_rules! icon {
-        ($file:literal) => {
-            Asset {
+macro_rules! icons {
+    ($($name:ident => $file:literal),+ $(,)?) => {
+        $(
+            pub static $name: super::Asset = super::Asset {
                 url: env!(concat!("ICON_URL_", $file)),
                 content_type: "image/svg+xml",
                 bytes: include_bytes!(concat!("../assets/images/icons/", $file)),
-            }
-        };
-    }
+            };
+        )+
+        pub(super) const ALL: &[&super::Asset] = &[$(&$name),+];
+    };
+}
 
-    pub static LATTE: Asset = icon!("latte.svg");
-    pub static FRAPPE: Asset = icon!("frappe.svg");
-    pub static MACCHIATO: Asset = icon!("macchiato.svg");
-    pub static MOCHA: Asset = icon!("mocha.svg");
+/// Catppuccin flavor icons. Append `#icon` to the URL for an SVG `<use>` element.
+pub mod theme {
+    icons! {
+        LATTE => "latte.svg",
+        FRAPPE => "frappe.svg",
+        MACCHIATO => "macchiato.svg",
+        MOCHA => "mocha.svg",
+    }
+}
+
+/// Brand and interface icons. Append `#icon` to the URL for an SVG `<use>` element.
+pub mod icons {
+    icons! {
+        ANGLE_DOWN => "angle-down.svg",
+        ANILIST => "anilist.svg",
+        BLUESKY => "bluesky.svg",
+        DISCORD => "discord.svg",
+        DOWNLOAD => "download.svg",
+        EMAIL => "email.svg",
+        FACEBOOK => "facebook.svg",
+        GITHUB => "github.svg",
+        GIT_BRANCH => "git-branch.svg",
+        GITLAB => "gitlab.svg",
+        INSTAGRAM => "instagram.svg",
+        LINKEDIN => "linkedin.svg",
+        MASTODON => "mastodon.svg",
+        SIGNAL => "signal.svg",
+        SPOTIFY => "spotify.svg",
+        THREADS => "threads.svg",
+        TWITCH => "twitch.svg",
+        WEBSITE => "website.svg",
+        X => "x.svg",
+        YOUTUBE => "youtube.svg",
+    }
 }
 
 /// Look up the exact, encoded request path, including `/static/`.
@@ -44,20 +73,41 @@ pub mod theme {
 /// ```
 #[must_use]
 pub fn lookup(path: &str) -> Option<&'static Asset> {
-    [
-        &theme::LATTE,
-        &theme::FRAPPE,
-        &theme::MACCHIATO,
-        &theme::MOCHA,
-    ]
-    .into_iter()
-    .find(|asset| asset.url == path)
+    icons::ALL
+        .iter()
+        .chain(theme::ALL)
+        .copied()
+        .find(|asset| asset.url == path)
 }
 
 #[cfg(test)]
 mod tests {
     use super::{lookup, theme};
     use sha2::{Digest, Sha256};
+
+    #[test]
+    fn every_packaged_svg_is_served_at_its_content_address() {
+        use std::{fs, path::Path};
+
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/images/icons");
+        let mut count = 0;
+        for entry in fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.extension().and_then(|ext| ext.to_str()) != Some("svg") {
+                continue;
+            }
+            let bytes = fs::read(&path).unwrap();
+            let stem = path.file_stem().unwrap().to_str().unwrap();
+            let prefix = u64::from_be_bytes(Sha256::digest(&bytes)[..8].try_into().unwrap());
+            let url = format!("/static/images/icons/{stem}.{prefix:016x}.svg");
+            let asset = lookup(&url).unwrap_or_else(|| panic!("unregistered icon: {url}"));
+            assert_eq!(asset.bytes, bytes);
+            assert_eq!(asset.content_type, "image/svg+xml");
+            assert!(lookup(&format!("/static/images/icons/{stem}.svg")).is_none());
+            count += 1;
+        }
+        assert_eq!(count, super::icons::ALL.len() + theme::ALL.len());
+    }
 
     #[test]
     fn serves_the_original_fulla_symbols_at_their_existing_urls() {

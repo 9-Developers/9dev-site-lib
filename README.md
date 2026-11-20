@@ -7,17 +7,20 @@
 [![Release][badge-releases]][link-releases]
 
 A Cargo workspace for Rust websites. Use [`nine_dev_site_lib`](crates/nine_dev_site_lib/)
-to serve shared theme icons, and [`nine_dev_site_build`](crates/nine_dev_site_build/)
+to serve shared icons, and [`nine_dev_site_build`](crates/nine_dev_site_build/)
 to fingerprint a site's own assets at build time.
 
-## Using the shared theme icons
+## Using the shared icons
 
-Add `nine_dev_site_lib` to the site's `[dependencies]`. Templates can use
-`assets::theme::{LATTE, FRAPPE, MACCHIATO, MOCHA}`. For example, pass
-`nine_dev_site_lib::assets::theme::LATTE.url` as `latte_url` to an HTML template:
+Add `nine_dev_site_lib` to the site's `[dependencies]`. Use `assets::icons` for
+brand and interface icons and `assets::theme` for Latte, Frappé, Macchiato, and
+Mocha. For example, pass `nine_dev_site_lib::assets::icons::GITHUB.url` as
+`github_url` to a template:
 
 ```html
-<svg aria-hidden="true" width="16" height="16"><use href="{{ latte_url }}#icon"></use></svg>
+<a href="https://github.com/9-Developers" aria-label="9 Developers on GitHub">
+  <svg aria-hidden="true" width="24" height="24"><use href="{{ github_url }}#icon"></use></svg>
+</a>
 ```
 
 In the site's `/static/` handler, pass the full request path to `assets::lookup`.
@@ -36,8 +39,9 @@ if let Some(icon) = assets::lookup(uri.path()) {
 // Continue with the site's own asset lookup.
 ```
 
-Include `nine_dev_site_lib::THIRD_PARTY_NOTICES` on the site's licenses page
-when distributing the icons.
+Use `assets::icons::GIT_BRANCH` for a generic repository link. Include
+`nine_dev_site_lib::THIRD_PARTY_NOTICES` on the site's
+licenses page; brand marks remain subject to their owners' usage guidelines.
 
 ## Fingerprinting static assets
 

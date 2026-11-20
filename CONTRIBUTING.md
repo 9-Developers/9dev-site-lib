@@ -184,6 +184,15 @@ Document any project-specific conventions in this section.
 
 Template uses [Semantic commit messages][8].
 
+## Reproducing the runtime icons
+
+`python3 scripts/import-icons.py --check` reproduces the non-theme symbols
+from the commits listed in the runtime crate's [artwork notices](crates/nine_dev_site_lib/THIRD_PARTY_NOTICES.md)
+and compares them to the vendored files. Omit `--check` to regenerate them.
+Use Python 3.9+, ImageMagick 7 (`magick`) and Potrace 1.16 (`potrace`) on `PATH`.
+Only the AniList PNG conversion uses ImageMagick and Potrace. Cargo builds use
+the vendored files directly.
+
 ## Publishing crates
 
 Store the crates.io `publish-update` token in the Forgejo Actions secret

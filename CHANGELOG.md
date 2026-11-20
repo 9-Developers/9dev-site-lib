@@ -10,6 +10,8 @@ and this project adheres to
 
 ### Added
 
+- `nine_dev_site_lib::assets::icons`: 20 brand and interface SVG symbols,
+  including Discord and GitHub, served through the existing asset lookup.
 - Runtime access to four embedded theme icons, their fingerprinted URLs, and
   artwork notices in `nine_dev_site_lib`.
 

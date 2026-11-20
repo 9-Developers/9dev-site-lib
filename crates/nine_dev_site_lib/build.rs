@@ -3,11 +3,19 @@ use std::{fs, io};
 use nine_dev_site_build::assets::fingerprint;
 
 fn main() -> io::Result<()> {
-    for name in ["latte.svg", "frappe.svg", "macchiato.svg", "mocha.svg"] {
+    const DIR: &str = "assets/images/icons";
+    println!("cargo::rerun-if-changed={DIR}");
+    for entry in fs::read_dir(DIR)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.extension().and_then(|ext| ext.to_str()) != Some("svg") {
+            continue;
+        }
+        let name = entry.file_name().into_string().map_err(|_| {
+            io::Error::new(io::ErrorKind::InvalidData, "icon filename must be UTF-8")
+        })?;
         let logical_path = format!("images/icons/{name}");
-        let file = format!("assets/{logical_path}");
-        println!("cargo::rerun-if-changed={file}");
-        let asset = fingerprint(&logical_path, &fs::read(file)?);
+        let asset = fingerprint(&logical_path, &fs::read(path)?);
         println!("cargo::rustc-env=ICON_URL_{name}={}", asset.url);
     }
     Ok(())
