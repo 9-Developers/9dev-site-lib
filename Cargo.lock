@@ -756,7 +756,7 @@ dependencies = [
 
 [[package]]
 name = "nine_dev_site_build"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "percent-encoding",
  "sha2",
@@ -764,7 +764,7 @@ dependencies = [
 
 [[package]]
 name = "nine_dev_site_lib"
-version = "0.7.2"
+version = "0.7.3"
 dependencies = [
  "askama",
  "axum",
