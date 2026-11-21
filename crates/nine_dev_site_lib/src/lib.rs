@@ -2,6 +2,7 @@
 
 pub mod assets;
 pub mod catalog;
+pub mod icon_link;
 #[cfg(feature = "axum")]
 pub mod serving;
 pub mod switcher;

@@ -15,14 +15,20 @@ own assets at build time.
 
 Add `nine_dev_site_lib` to the site's `[dependencies]`. Use `assets::icons` for
 brand and interface icons and `assets::theme` for Latte, Frappé, Macchiato, and
-Mocha. For example, pass `nine_dev_site_lib::assets::icons::GITHUB.url` as
-`github_url` to a template:
+Mocha. To link to an external site, build an `IconLink` with a site-owned URL,
+an icon, and a nonempty label:
 
-```html
-<a href="https://github.com/9-Developers" aria-label="9 Developers on GitHub">
-  <svg aria-hidden="true" width="24" height="24"><use href="{{ github_url }}#icon"></use></svg>
-</a>
+```rust
+use nine_dev_site_lib::{assets::icons, icon_link::IconLink};
+
+let source = IconLink::new("https://github.com/9-Developers", &icons::GITHUB, "9 Developers on GitHub")?;
+let chat = IconLink::new("https://discord.gg/KTgshSbEUU", &icons::DISCORD, "Join the Discord community")?.icon_only();
 ```
+
+Render `{{ source|safe }}` for a visible label, or `{{ chat|safe }}`
+for an icon whose link is named by `aria-label`. Both open in a new tab. The
+component escapes the label and hides the decorative SVG from assistive
+technology. Style `.nd-icon-link` in your site CSS if needed.
 
 In the site's `/static/` handler, pass the full request path to `assets::lookup`.
 For example, inside an Axum handler returning `Response`:
