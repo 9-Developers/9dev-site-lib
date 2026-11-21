@@ -2,6 +2,8 @@
 """Exercise the built server using a local OTLP receiver; no cloud credentials."""
 
 import argparse
+from contextlib import closing
+import http.client
 import http.server
 import json
 import os
@@ -12,8 +14,6 @@ import subprocess
 import tempfile
 import threading
 import time
-import urllib.error
-import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 RECEIVED = []
@@ -39,15 +39,19 @@ def free_port():
 
 
 def fetch(port, path="/health"):
-    request = urllib.request.Request(
-        f"http://127.0.0.1:{port}{path}",
-        headers={"Authorization": "Bearer private-input", "Cookie": "private-input"},
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=1) as response:
+    # Connect directly to loopback without proxy or redirect handling.
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=1)
+    with closing(connection):
+        connection.request(
+            "GET",
+            path,
+            headers={
+                "Authorization": "Bearer private-input",
+                "Cookie": "private-input",
+            },
+        )
+        with connection.getresponse() as response:
             return response.status
-    except urllib.error.HTTPError as error:
-        return error.code
 
 
 def exercise(binary, fulla, settings, invalid=False):
@@ -82,7 +86,7 @@ def exercise(binary, fulla, settings, invalid=False):
                     try:
                         if fetch(port) == 200:
                             break
-                    except (OSError, urllib.error.URLError):
+                    except OSError:
                         pass
                     time.sleep(0.05)
                 else:

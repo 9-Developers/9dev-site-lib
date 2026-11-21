@@ -1,6 +1,6 @@
 [package]
 name = "nine_dev_site_lib"
-version = "0.7.1"
+version = "0.7.2"
 edition.workspace = true
 description = "Shared browser assets, optional Axum responses, and startup configuration for Rust sites"
 repository = "https://git.9dev.tech/9-Developers/9dev-site-lib"
