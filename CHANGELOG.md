@@ -10,6 +10,8 @@ and this project adheres to
 
 ### Added
 
+- `nine_dev_site_lib::telemetry`: opt-in JSON logging, OTLP HTTP logs and metrics,
+  and Axum request middleware. Includes a shared Grafana dashboard.
 - `nine_dev_site_build`: `tailwind::write_catppuccin_aliases` provides Tailwind v4
   utilities for all 26 colors in the shared runtime palette.
 ### Changed

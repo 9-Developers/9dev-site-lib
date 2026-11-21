@@ -5,6 +5,8 @@ pub mod catalog;
 #[cfg(feature = "axum")]
 pub mod serving;
 pub mod switcher;
+#[cfg(feature = "telemetry")]
+pub mod telemetry;
 
 /// Attribution and license text for the bundled browser assets, for use on a site's licenses page.
 pub const THIRD_PARTY_NOTICES: &str = include_str!("../THIRD_PARTY_NOTICES.md");

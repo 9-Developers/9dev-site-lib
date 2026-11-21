@@ -31,5 +31,10 @@ jobs:
       - name: Test runtime with optional assets
         run: cargo test --locked -p nine_dev_site_lib --all-features
 
+      - name: Check local OTLP export
+        run: |
+          cargo build --locked -p nine_dev_site_lib --features telemetry --example telemetry_smoke
+          python3 scripts/check_otlp.py
+
       - name: Build
         run: cargo build --locked

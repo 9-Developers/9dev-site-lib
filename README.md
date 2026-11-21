@@ -11,6 +11,26 @@ to serve shared icons, Catppuccin colors, a theme switcher, and optional HTMX.
 Use [`nine_dev_site_build`](crates/nine_dev_site_build/) to fingerprint a site's
 own assets at build time.
 
+## HTTP telemetry for Grafana Cloud
+
+Enable `nine_dev_site_lib = { version = "0.7", features = ["telemetry"] }`
+for structured JSON request logs and optional OTLP log and metric export.
+Initialize it in synchronous `main`, after loading the site's environment:
+
+```rust
+let telemetry = nine_dev_site_lib::telemetry::Telemetry::init(
+    "example.org", env!("CARGO_PKG_VERSION"), &[env!("CARGO_CRATE_NAME")],
+)?;
+let result = run_server(telemetry.requests()); // starts Tokio and returns after HTTP drains
+telemetry.shutdown();
+result
+```
+
+Inside `run_server`, attach `axum::middleware::from_fn_with_state(requests,
+nine_dev_site_lib::telemetry::observe)` to the completed router using `.layer(...)`.
+The service logs to stdout without Grafana credentials. See the
+[Grafana setup guide and shared dashboard](observability/README.md) for remote export.
+
 ## Using the shared icons
 
 Add `nine_dev_site_lib` to the site's `[dependencies]`. Use `assets::icons` for
@@ -80,7 +100,7 @@ To serve HTMX 4.0.0 from your own site, enable the `htmx` feature:
 
 ```toml
 [dependencies]
-nine_dev_site_lib = { version = "0.5", features = ["htmx"] }
+nine_dev_site_lib = { version = "0.7", features = ["htmx"] }
 ```
 
 Reference the script's fingerprinted URL in your Askama template:
