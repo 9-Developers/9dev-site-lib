@@ -18,6 +18,18 @@ and this project adheres to
 
 ### Removed
 
+## nine_dev_site_lib - 0.9.0 (2026-11-21)
+
+### Added
+
+- `nine_dev_site_lib::assets::icons::PATREON` for Patreon links.
+
+## nine_dev_site_lib - 0.8.0 (2026-11-21)
+
+### Added
+
+- `nine_dev_site_lib::assets::icons::RSS` for RSS links.
+
 ## nine_dev_site_lib - 0.7.0 (2026-11-21)
 
 ### Added

@@ -80,6 +80,12 @@ licenses do not grant trademark rights. Use brand marks to identify their
 respective services and follow the owners' guidelines, including
 [Discord's](https://discord.com/branding) and [GitHub's](https://brand.github.com/foundations/logo).
 
+### Font Awesome Free 6.7.2 — CC BY 4.0
+
+[`patreon.svg`](https://github.com/FortAwesome/Font-Awesome/blob/6.7.2/svgs/brands/patreon.svg)
+is copyright 2024 Fonticons, Inc., and licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+This crate wraps the original path in a `currentColor` symbol and preserves the upstream viewBox.
+
 ### Bootstrap Icons v1.13.1 — MIT
 
 [SVG sources](https://github.com/twbs/icons/tree/ce0e49dd063243118a115f17ad1fe1fe7576d552/icons)
