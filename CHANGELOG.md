@@ -18,6 +18,13 @@ and this project adheres to
 
 ### Removed
 
+## nine_dev_site_lib - 0.5.1 (2026-11-21)
+
+### Added
+
+- `icon_link::IconLink` renders external links with a visible
+  label or an accessible name for an icon-only link.
+
 ## nine_dev_site_build - 0.2.1 (2026-11-21)
 
 ### Added

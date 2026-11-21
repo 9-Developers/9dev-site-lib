@@ -1,0 +1,4 @@
+<a class="nd-icon-link" href="{{ href }}" target="_blank" rel="noopener noreferrer"{% if icon_only %} aria-label="{{ label }}"{% endif %}>
+  <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="{{ icon.url }}#icon"></use></svg>
+  {% if !icon_only %}<span>{{ label }}</span>{% endif %}
+</a>
