@@ -1,8 +1,8 @@
 [package]
 name = "nine_dev_site_lib"
-version = "0.5.0"
+version = "0.6.0"
 edition.workspace = true
-description = "Fingerprinted browser assets: icons, Catppuccin palettes, a theme switcher, and optional HTMX"
+description = "Shared browser assets, optional Axum responses, and startup configuration for Rust sites"
 repository = "https://git.9dev.tech/9-Developers/9dev-site-lib"
 # Rust code is BSD-3-Clause; icons and palette are MIT; HTMX is 0BSD.
 license = "BSD-3-Clause AND MIT AND 0BSD"
@@ -10,8 +10,10 @@ license = "BSD-3-Clause AND MIT AND 0BSD"
 [features]
 htmx = []
 axum = ["dep:axum", "dep:mime_guess"]
+startup = ["dep:dotenvy"]
 
 [dependencies]
+dotenvy = { version = "0.15.7", optional = true }
 axum = { version = "0.8", default-features = false, optional = true }
 mime_guess = { version = "2", optional = true }
 askama = { version = "0.16", default-features = false, features = [
@@ -24,3 +26,9 @@ nine_dev_site_build = { path = "../nine_dev_site_build", version = "0.2" }
 
 [dev-dependencies]
 sha2 = "0.11"
+tempfile = "3"
+
+[[test]]
+name = "startup"
+harness = false
+required-features = ["startup"]
