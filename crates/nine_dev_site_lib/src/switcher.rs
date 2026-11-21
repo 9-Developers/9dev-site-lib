@@ -1,6 +1,6 @@
 //! Compact, server-rendered theme disclosure. Load `JS` before stylesheets.
 
-use crate::assets::{icons, theme, Asset};
+use crate::assets::{Asset, icons, theme};
 use askama::Template;
 
 pub static CSS: Asset = Asset {
