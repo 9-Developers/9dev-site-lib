@@ -18,6 +18,13 @@ and this project adheres to
 
 ### Removed
 
+## nine_dev_site_lib - 0.7.0 (2026-11-21)
+
+### Added
+
+- `nine_dev_site_lib::telemetry`: opt-in JSON logging, OTLP HTTP logs and metrics,
+  and Axum request middleware. Includes a shared Grafana dashboard.
+
 ## nine_dev_site_lib - 0.6.0 (2026-11-21)
 
 ### Added

@@ -1,6 +1,6 @@
 [package]
 name = "nine_dev_site_lib"
-version = "0.6.0"
+version = "0.7.0"
 edition.workspace = true
 description = "Shared browser assets, optional Axum responses, and startup configuration for Rust sites"
 repository = "https://git.9dev.tech/9-Developers/9dev-site-lib"
@@ -11,9 +11,50 @@ license = "BSD-3-Clause AND MIT AND 0BSD"
 htmx = []
 axum = ["dep:axum", "dep:mime_guess"]
 startup = ["dep:dotenvy"]
+telemetry = [
+  "dep:axum",
+  "axum/matched-path",
+  "dep:opentelemetry",
+  "dep:opentelemetry_sdk",
+  "dep:opentelemetry-otlp",
+  "dep:opentelemetry-appender-tracing",
+  "dep:percent-encoding",
+  "dep:rand",
+  "dep:reqwest",
+  "dep:tracing",
+  "dep:tracing-subscriber",
+]
 
 [dependencies]
 dotenvy = { version = "0.15.7", optional = true }
+opentelemetry = { version = "0.33.1", optional = true, default-features = false, features = [
+  "logs",
+  "metrics",
+] }
+opentelemetry_sdk = { version = "0.33.1", optional = true, default-features = false, features = [
+  "logs",
+  "metrics",
+  "internal-logs",
+] }
+opentelemetry-otlp = { version = "0.33.1", optional = true, default-features = false, features = [
+  "http-proto",
+  "reqwest-blocking-client",
+  "logs",
+  "metrics",
+  "internal-logs",
+] }
+opentelemetry-appender-tracing = { version = "0.33.1", optional = true, default-features = false }
+percent-encoding = { version = "2", optional = true }
+rand = { version = "0.10", optional = true }
+reqwest = { version = "0.13", optional = true, default-features = false, features = [
+  "blocking",
+  "native-tls",
+] }
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", optional = true, features = [
+  "env-filter",
+  "json",
+] }
 axum = { version = "0.8", default-features = false, optional = true }
 mime_guess = { version = "2", optional = true }
 askama = { version = "0.16", default-features = false, features = [
@@ -32,3 +73,17 @@ tempfile = "3"
 name = "startup"
 harness = false
 required-features = ["startup"]
+axum = { version = "0.8", default-features = false, features = [
+  "http1",
+  "tokio",
+] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal"] }
+opentelemetry_sdk = { version = "0.33.1", default-features = false, features = [
+  "metrics",
+  "testing",
+] }
+tower = { version = "0.5", features = ["util"] }
+
+[[example]]
+name = "telemetry_smoke"
+required-features = ["telemetry"]

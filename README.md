@@ -31,6 +31,27 @@ A missing file is fine; parent directories are never searched. Exported
 variables take precedence. `port()` uses `3000` when `PORT` is absent and
 rejects empty or out-of-range values. For other settings, `optional_env("HOST")?`
 returns `None` for an absent variable and an error for a non-Unicode value.
+||||||| 94ce0b3
+
+## HTTP telemetry for Grafana Cloud
+
+Enable `nine_dev_site_lib = { version = "0.7", features = ["telemetry"] }`
+for structured JSON request logs and optional OTLP log and metric export.
+Initialize it in synchronous `main`, after loading the site's environment:
+
+```rust
+let telemetry = nine_dev_site_lib::telemetry::Telemetry::init(
+    "example.org", env!("CARGO_PKG_VERSION"), &[env!("CARGO_CRATE_NAME")],
+)?;
+let result = run_server(telemetry.requests()); // starts Tokio and returns after HTTP drains
+telemetry.shutdown();
+result
+```
+
+Inside `run_server`, attach `axum::middleware::from_fn_with_state(requests,
+nine_dev_site_lib::telemetry::observe)` to the completed router using `.layer(...)`.
+The service logs to stdout without Grafana credentials. See the
+[Grafana setup guide and shared dashboard](observability/README.md) for remote export.
 
 ## Using the shared icons
 
@@ -76,7 +97,10 @@ licenses page; brand marks remain subject to their owners' usage guidelines.
 Link the palette before your site's stylesheet and serve it through `assets::lookup`:
 
 ```html
-<link rel="stylesheet" href="{{ nine_dev_site_lib::assets::theme::PALETTE.url }}">
+<link
+  rel="stylesheet"
+  href="{{ nine_dev_site_lib::assets::theme::PALETTE.url }}"
+/>
 ```
 
 Use `var(--ctp-base)` for a background, `var(--ctp-text)` for text, or any of
@@ -93,7 +117,7 @@ instead. In the page head, load the script synchronously before stylesheets:
 
 ```html
 <script src="{{ nine_dev_site_lib::switcher::JS.url }}"></script>
-<link rel="stylesheet" href="{{ nine_dev_site_lib::switcher::CSS.url }}">
+<link rel="stylesheet" href="{{ nine_dev_site_lib::switcher::CSS.url }}" />
 ```
 
 Serve both through `assets::lookup`, just like icons. The switcher sets
@@ -107,7 +131,7 @@ To serve HTMX 4.0.0 from your own site, enable the `htmx` feature:
 
 ```toml
 [dependencies]
-nine_dev_site_lib = { version = "0.5", features = ["htmx"] }
+nine_dev_site_lib = { version = "0.7", features = ["htmx"] }
 ```
 
 Reference the script's fingerprinted URL in your Askama template:
