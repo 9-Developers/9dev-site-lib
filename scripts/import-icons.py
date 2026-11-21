@@ -95,6 +95,7 @@ def icons():
         "instagram",
         "linkedin",
         "mastodon",
+        "rss",
         "signal",
         "spotify",
         "threads",

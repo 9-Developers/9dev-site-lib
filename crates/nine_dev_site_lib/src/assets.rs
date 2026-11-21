@@ -58,6 +58,7 @@ pub mod icons {
         INSTAGRAM => "instagram.svg",
         LINKEDIN => "linkedin.svg",
         MASTODON => "mastodon.svg",
+        RSS => "rss.svg",
         SIGNAL => "signal.svg",
         SPOTIFY => "spotify.svg",
         THREADS => "threads.svg",

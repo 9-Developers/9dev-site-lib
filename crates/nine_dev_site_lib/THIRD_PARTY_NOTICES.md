@@ -87,7 +87,7 @@ and [license](https://github.com/twbs/icons/blob/ce0e49dd063243118a115f17ad1fe1f
 The following files keep the upstream path geometry and viewBox:
 
 - `bluesky.svg`, `discord.svg`, `display.svg`, `facebook.svg`, `github.svg`, `gitlab.svg`,
-  `instagram.svg`, `linkedin.svg`, `mastodon.svg`, `signal.svg`, `spotify.svg`,
+  `instagram.svg`, `linkedin.svg`, `mastodon.svg`, `rss.svg`, `signal.svg`, `spotify.svg`,
   `threads.svg`, `twitch.svg`, `youtube.svg`: same upstream filenames.
 - `angle-down.svg`: `chevron-down.svg`; `website.svg`: `globe.svg`;
   `x.svg`: `twitter-x.svg`.

@@ -88,7 +88,8 @@ if let Some(icon) = assets::lookup(uri.path()) {
 // Continue with the site's own asset lookup.
 ```
 
-Use `assets::icons::GIT_BRANCH` for a generic repository link. Include
+Use `assets::icons::GIT_BRANCH` for a generic repository link and
+`assets::icons::RSS` for a feed link. Include
 `nine_dev_site_lib::THIRD_PARTY_NOTICES` on the site's
 licenses page; brand marks remain subject to their owners' usage guidelines.
 

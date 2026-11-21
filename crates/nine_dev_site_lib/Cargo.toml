@@ -8,7 +8,7 @@ license = "BSD-3-Clause AND MIT AND 0BSD"
 name = "nine_dev_site_lib"
 readme.workspace = true
 repository.workspace = true
-version = "0.7.3"
+version = "0.8.0"
 
 [features]
 htmx = []
