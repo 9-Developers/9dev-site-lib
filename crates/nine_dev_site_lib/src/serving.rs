@@ -1,7 +1,7 @@
 //! Axum GET/HEAD response helpers for embedded assets.
 
 use axum::{
-    http::{HeaderMap, HeaderValue, StatusCode, header},
+    http::{header, HeaderMap, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
 };
 

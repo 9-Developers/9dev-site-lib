@@ -10,8 +10,6 @@ and this project adheres to
 
 ### Added
 
-- `nine_dev_site_build`: `tailwind::write_catppuccin_aliases` provides Tailwind v4
-  utilities for all 26 colors in the shared runtime palette.
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,13 @@ and this project adheres to
 ### Fixed
 
 ### Removed
+
+## nine_dev_site_build - 0.2.1 (2026-11-21)
+
+### Added
+
+- `tailwind::write_catppuccin_aliases` provides Tailwind v4
+  utilities for all 26 colors in the shared runtime palette.
 
 ## nine_dev_site_lib - 0.5.0 (2026-11-20)
 
