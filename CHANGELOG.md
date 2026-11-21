@@ -18,6 +18,13 @@ and this project adheres to
 
 ### Removed
 
+## nine_dev_site_lib - 0.6.0 (2026-11-21)
+
+### Added
+
+- opt-in `startup` helpers for local `.env` loading,
+  optional environment settings, and HTTP port validation.
+
 ## nine_dev_site_lib - 0.5.1 (2026-11-21)
 
 ### Added

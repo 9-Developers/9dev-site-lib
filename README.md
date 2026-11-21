@@ -11,6 +11,27 @@ to serve shared icons, Catppuccin colors, a theme switcher, and optional HTMX.
 Use [`nine_dev_site_build`](crates/nine_dev_site_build/) to fingerprint a site's
 own assets at build time.
 
+## Loading server configuration
+
+Enable the `startup` feature of `nine_dev_site_lib` (0.6 or later). Load
+`./.env` from synchronous `main`, before starting Tokio or other threads:
+
+```rust
+use nine_dev_site_lib::startup;
+
+fn main() -> std::io::Result<()> {
+    startup::load_local_dotenv()?;
+    let port = startup::port()?;
+    println!("Listening on port {port}");
+    Ok(())
+}
+```
+
+A missing file is fine; parent directories are never searched. Exported
+variables take precedence. `port()` uses `3000` when `PORT` is absent and
+rejects empty or out-of-range values. For other settings, `optional_env("HOST")?`
+returns `None` for an absent variable and an error for a non-Unicode value.
+
 ## Using the shared icons
 
 Add `nine_dev_site_lib` to the site's `[dependencies]`. Use `assets::icons` for
