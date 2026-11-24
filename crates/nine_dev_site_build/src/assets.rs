@@ -12,6 +12,10 @@ const PATH_ENCODE_SET: &AsciiSet = &NON_ALPHANUMERIC
     .remove(b'_')
     .remove(b'~');
 
+pub(crate) fn encode_path(path: &str) -> percent_encoding::PercentEncode<'_> {
+    utf8_percent_encode(path, PATH_ENCODE_SET)
+}
+
 /// A content fingerprint and the root-relative URL that embeds it.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Fingerprint {
@@ -101,8 +105,8 @@ pub fn fingerprint(logical_path: &str, bytes: &[u8]) -> Fingerprint {
     let stem_path = &logical_path[..logical_path.len() - extension.len()];
     let url = format!(
         "/static/{}.{hash}{}",
-        utf8_percent_encode(stem_path, PATH_ENCODE_SET),
-        utf8_percent_encode(extension, PATH_ENCODE_SET),
+        encode_path(stem_path),
+        encode_path(extension),
     );
     Fingerprint { hash, url }
 }
@@ -117,8 +121,15 @@ mod tests {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/public");
         let files = walk(&root).unwrap();
         let sources: Vec<_> = files.iter().map(|file| file.source.as_str()).collect();
-        assert_eq!(sources, [".well-known/example.txt", "images/Two Words.svg"]);
-        let image = &files[1];
+        assert_eq!(
+            sources,
+            [
+                ".well-known/example.txt",
+                "images/.draft/notes.txt",
+                "images/Two Words.svg"
+            ]
+        );
+        let image = &files[2];
         assert_eq!(
             image.fingerprint,
             fingerprint(

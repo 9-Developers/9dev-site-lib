@@ -72,8 +72,9 @@ for an icon whose link is named by `aria-label`. Both open in a new tab. The
 component escapes the label and hides the decorative SVG from assistive
 technology. Style `.nd-icon-link` in your site CSS if needed.
 
-In the site's `/static/` handler, pass the full request path to `assets::lookup`.
-For example, inside an Axum handler returning `Response`:
+The [asset router](#registering-site-assets-and-mounting-their-routes) serves
+these URLs automatically. If you write your own `/static/` handler, pass the
+full request path to `assets::lookup`. For example, in Axum:
 
 ```rust
 use axum::{http::header, response::IntoResponse};
@@ -195,6 +196,52 @@ Enable the runtime crate's optional `axum` feature to construct responses:
 use `serving::response(bytes, mime, serving::IMMUTABLE)` for a fingerprinted
 URL, or `serving::revalidate(bytes, mime, hash, &headers)` in a stable URL's
 GET/HEAD handler. A matching `If-None-Match` returns `304 Not Modified`.
+
+### Registering site assets and mounting their routes
+
+Use `nine_dev_site_build` 0.2.3 or later with `nine_dev_site_lib` 0.10 and
+its `axum` feature. In `build.rs`, after producing the final CSS, declare the
+files, directories, and stable URLs your site publishes:
+
+```rust
+use nine_dev_site_build::catalog::{self, Registration::*};
+use std::path::{Path, PathBuf};
+
+println!("cargo:rerun-if-changed=public");
+let out = PathBuf::from(std::env::var("OUT_DIR")?);
+catalog::write(Path::new("public"), &out.join("public_assets.rs"), &[
+    File("main.css"),
+    Directory("images"),
+    Revalidate("site.webmanifest", "/site.webmanifest"),
+    MaxAge(".well-known/security.txt", "/.well-known/security.txt", 3600),
+])?;
+```
+
+`File` and `Directory` produce immutable `/static/` URLs. `Directory` skips
+hidden descendants. `Revalidate` serves an exact URL with a content ETag;
+`MaxAge` serves one with the specified lifetime in seconds. To publish both a
+fingerprinted URL and an alias, register the source both ways. Use unescaped
+filenames and alias paths; the build crate encodes the resulting URLs.
+
+In the server, supply a function that returns the embedded bytes for a source
+name. For example, using `include_dir`:
+
+```rust
+use include_dir::{Dir, include_dir};
+use nine_dev_site_lib::{catalog::SiteCatalog, serving};
+
+static PUBLIC: Dir<'static> = include_dir!("$CARGO_MANIFEST_DIR/public");
+static CATALOG: SiteCatalog = include!(concat!(env!("OUT_DIR"), "/public_assets.rs"));
+
+fn asset_routes() -> axum::Router {
+    serving::asset_router(&CATALOG, |source| PUBLIC.get_file(source).map(|f| f.contents()))
+}
+```
+
+Merge `asset_routes()` into the site's router. Shared assets are served first
+under `/static/`; other page requests keep the site's fallback. For templates,
+`CATALOG.by_source("main.css")` returns the entry, preferring its fingerprinted
+URL if it also has a stable alias.
 
 ### Catppuccin utilities in Tailwind v4
 
