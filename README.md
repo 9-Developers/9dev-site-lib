@@ -233,13 +233,18 @@ use nine_dev_site_lib::{catalog::SiteCatalog, serving};
 static PUBLIC: Dir<'static> = include_dir!("$CARGO_MANIFEST_DIR/public");
 static CATALOG: SiteCatalog = include!(concat!(env!("OUT_DIR"), "/public_assets.rs"));
 
-fn asset_routes() -> axum::Router {
+fn asset_routes<S: Clone + Send + Sync + 'static>() -> axum::Router<S> {
     serving::asset_router(&CATALOG, |source| PUBLIC.get_file(source).map(|f| f.contents()))
 }
 ```
 
-Merge `asset_routes()` into the site's router. Shared assets are served first
-under `/static/`; other page requests keep the site's fallback. For templates,
+If the site already has a `GET /static/{*path}` handler, register the site
+assets it serves in the catalog and remove the old route. The asset router
+mounts the same route, and Axum panics if both are present.
+
+Call `.merge(asset_routes())` on the site's router before `.with_state(...)`.
+Shared assets are served first under `/static/`; other page requests keep
+the site's fallback. For templates,
 `CATALOG.by_source("main.css")` returns the entry, preferring its fingerprinted
 URL if it also has a stable alias.
 
