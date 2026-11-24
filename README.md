@@ -238,15 +238,21 @@ fn asset_routes<S: Clone + Send + Sync + 'static>() -> axum::Router<S> {
 }
 ```
 
-If the site already has a `GET /static/{*path}` handler, register the site
-assets it serves in the catalog and remove the old route. The asset router
-mounts the same route, and Axum panics if both are present.
+When migrating from an existing `GET /static/{*path}` handler, register the
+site assets it serves. `File` and `Directory` publish fingerprinted URLs:
+update links such as `/static/main.css` to use the URL from
+`CATALOG.by_source("main.css")`. To keep an existing URL outside `/static/`,
+register it with `Revalidate` or `MaxAge`. Aliases cannot use `/static` or
+paths under `/static/`.
+
+Before merging, remove the old static handler and any existing GET/HEAD
+handlers for registered aliases, such as `/site.webmanifest` in the example.
+The asset router handles those routes; overlapping handlers make Axum panic.
 
 Call `.merge(asset_routes())` on the site's router before `.with_state(...)`.
 Shared assets are served first under `/static/`; other page requests keep
-the site's fallback. For templates,
-`CATALOG.by_source("main.css")` returns the entry, preferring its fingerprinted
-URL if it also has a stable alias.
+the site's fallback. If a source has both a fingerprinted URL and a stable
+alias, `by_source` prefers the fingerprinted entry.
 
 ### Catppuccin utilities in Tailwind v4
 
