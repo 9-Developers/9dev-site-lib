@@ -53,15 +53,33 @@ metadata rather than an indexed label.
 
 ## Verify locally
 
+Install the OTLP protobuf bindings in a Python virtual environment
+(`python3 -m pip install opentelemetry-proto`), or use the FreeBSD package
+`devel/py-opentelemetry-proto`. From the library checkout:
+
 ```sh
 cargo build --locked -p nine_dev_site_lib --features telemetry --example telemetry_smoke
 python3 scripts/check_otlp.py
 ```
 
-The smoke test uses a loopback receiver and dummy headers. To verify the Fulla
-adapter too, build Fulla, migrate a disposable PostgreSQL database, export its
-`DATABASE_URL`, and pass `--fulla /absolute/path/to/target/debug/fulla_fyi`
-to the same script. No cloud access is needed for either check.
+The smoke test sends two rounds of GETs and decodes what reaches a loopback OTLP
+receiver. The request counter and latency histogram count must both increase
+while the server is running. It also checks the exported request logs, route
+labels, health-probe exclusion, and final flush on shutdown. It uses dummy
+headers and does not need a Grafana account.
+
+To check Fulla, build the binary, export `DATABASE_URL` for a disposable
+PostgreSQL database, apply migrations with `fulla_fyi migrate`, and run
+`python3 scripts/check_otlp.py --fulla /path/to/fulla_fyi`.
+For another server using the shared telemetry, supply its default service name
+and one `--get PATH ROUTE_LABEL STATUS` per request. For example, against an
+Ixirsii binary and an empty, migrated database:
+
+```sh
+python3 scripts/check_otlp.py --server /path/to/ixirsii-tech --service ixirsii.tech \
+  --get /blog /blog 200 --get /blog/private-input '/blog/{slug}' 404 \
+  --get /site.webmanifest static 200
+```
 
 The dashboard and smoke test are adapted from Valorant Randomizer, copyright
 2025 Ryan Porterfield, under the [BSD-3-Clause license](../crates/nine_dev_site_lib/LICENSE-telemetry).

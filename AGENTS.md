@@ -9,7 +9,8 @@
 
 - Run both `cargo test --locked` and `cargo test --locked -p nine_dev_site_lib --all-features`. The default run skips optional runtime features.
 - Match Forgejo linting with `cargo clippy --all-targets --all-features --locked -- -D warnings`.
-- For telemetry changes, run `cargo build --locked -p nine_dev_site_lib --features telemetry --example telemetry_smoke` before `python3 scripts/check_otlp.py`. The script starts its own local OTLP receiver.
+- For telemetry changes, run `cargo build --locked -p nine_dev_site_lib --features telemetry --example telemetry_smoke` before `python3 scripts/check_otlp.py`. Install `opentelemetry-proto` for that Python interpreter. The script starts its own local OTLP receiver.
+- Site CI fetches the smoke script by Git blob ID (`git hash-object scripts/check_otlp.py`). Land fixture updates here before updating downstream pins; a test-only change needs no crate release.
 
 ## Releases
 
