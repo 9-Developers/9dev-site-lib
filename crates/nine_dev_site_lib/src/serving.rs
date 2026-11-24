@@ -44,7 +44,9 @@ pub fn asset_router<S: Clone + Send + Sync + 'static>(
                 let mime = content_type(entry.source);
                 match alias.cache {
                     AliasCache::Revalidate => revalidate(file, mime, entry.hash, &headers),
-                    AliasCache::Fixed(cache) => response(file, mime, cache),
+                    AliasCache::Fixed(cache) => {
+                        conditional(file, mime, entry.hash, &headers, cache)
+                    }
                 }
             }),
         );
@@ -75,7 +77,22 @@ pub fn revalidate(
     hash: &str,
     headers: &HeaderMap,
 ) -> Response {
-    const CACHE: &str = "public, max-age=0, must-revalidate";
+    conditional(
+        bytes,
+        mime,
+        hash,
+        headers,
+        "public, max-age=0, must-revalidate",
+    )
+}
+
+fn conditional(
+    bytes: &'static [u8],
+    mime: &'static str,
+    hash: &str,
+    headers: &HeaderMap,
+    cache: &'static str,
+) -> Response {
     let tag = format!("\"{hash}\"");
     let matches = headers.get_all(header::IF_NONE_MATCH).iter().any(|value| {
         let Ok(value) = value.to_str() else {
@@ -96,9 +113,9 @@ pub fn revalidate(
                 })
     });
     let mut response = if matches {
-        (StatusCode::NOT_MODIFIED, [(header::CACHE_CONTROL, CACHE)]).into_response()
+        (StatusCode::NOT_MODIFIED, [(header::CACHE_CONTROL, cache)]).into_response()
     } else {
-        response(bytes, mime, CACHE)
+        response(bytes, mime, cache)
     };
     if let Ok(value) = HeaderValue::from_str(&tag) {
         response.headers_mut().insert(header::ETAG, value);
@@ -202,6 +219,24 @@ mod tests {
                 to_bytes(response.into_body(), 100).await.unwrap().as_ref(),
                 body.as_bytes()
             );
+        }
+        for method in [axum::http::Method::GET, axum::http::Method::HEAD] {
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method(method)
+                        .uri(DISCOVERY)
+                        .header(header::IF_NONE_MATCH, format!("W/\"{HASH}\""))
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), 304);
+            assert_eq!(response.headers()[header::ETAG], format!("\"{HASH}\""));
+            assert_eq!(response.headers()[header::CACHE_CONTROL], HOUR);
+            assert!(to_bytes(response.into_body(), 0).await.unwrap().is_empty());
         }
         let head = app
             .oneshot(Request::head(DISCOVERY).body(Body::empty()).unwrap())

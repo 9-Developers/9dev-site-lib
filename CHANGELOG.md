@@ -10,7 +10,11 @@ and this project adheres to
 
 ### Added
 
+- Generate fingerprinted WOFF2 `@font-face` rules with `tailwind::write_font_faces`.
+
 ### Changed
+
+- Fixed-lifetime asset aliases now support ETags and conditional GET/HEAD.
 
 ### Deprecated
 

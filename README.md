@@ -219,9 +219,25 @@ catalog::write(Path::new("public"), &out.join("public_assets.rs"), &[
 
 `File` and `Directory` produce immutable `/static/` URLs. `Directory` skips
 hidden descendants. `Revalidate` serves an exact URL with a content ETag;
-`MaxAge` serves one with the specified lifetime in seconds. To publish both a
+`MaxAge` also sends a content ETag, with the specified lifetime in seconds.
+Both aliases honor `If-None-Match` on GET and HEAD. To publish both a
 fingerprinted URL and an alias, register the source both ways. Use unescaped
 filenames and alias paths; the build crate encodes the resulting URLs.
+
+For self-hosted WOFF2 fonts, register the font sources with `File` or
+`Directory` and generate a stylesheet before calling `tailwind::compile`:
+
+```rust
+use nine_dev_site_build::tailwind::{FontFace, write_font_faces};
+
+write_font_faces(Path::new("public"), Path::new("src/style/fonts.generated.css"), &[
+    FontFace { family: "Mulish", source: "fonts/mulish-normal.woff2",
+               style: "normal", weight: "200 900" },
+])?;
+```
+
+Import `./fonts.generated.css` from your Tailwind entrypoint. Its URLs change
+with the font bytes; fingerprint the compiled stylesheet last.
 
 In the server, supply a function that returns the embedded bytes for a source
 name. For example, using `include_dir`:

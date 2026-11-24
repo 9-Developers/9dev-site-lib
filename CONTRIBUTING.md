@@ -222,3 +222,8 @@ This guide is based on the **contributing.md**. [Make your own][9]!
 [7]: https://github.com/colinkeenan/silentcast
 [8]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
 [9]: https://contributing.md/
+
+## Downstream integration
+
+See [site asset migrations](docs/site-asset-migrations.md) for the remaining
+Ixirsii and Valorant Randomizer rollout and URL compatibility requirements.

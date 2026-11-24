@@ -2,6 +2,29 @@
 
 use std::{fs, io, path::Path, process::Command};
 
+/// A site-owned variable or static WOFF2 face. `source` is relative to the
+/// public root; `style` and `weight` are trusted CSS descriptors from build.rs.
+pub struct FontFace<'a> {
+    pub family: &'a str,
+    pub source: &'a str,
+    pub style: &'a str,
+    pub weight: &'a str,
+}
+
+/// Generate an importable stylesheet before compiling Tailwind. Register each
+/// source as an immutable catalog asset so its fingerprinted URL resolves.
+pub fn write_font_faces(root: &Path, destination: &Path, faces: &[FontFace<'_>]) -> io::Result<()> {
+    use std::fmt::Write;
+    let mut css = String::new();
+    for face in faces {
+        let url = crate::assets::fingerprint(face.source, &fs::read(root.join(face.source))?).url;
+        let family = face.family.replace('\\', "\\\\").replace('\'', "\\'");
+        writeln!(css, "@font-face {{ font-family: '{family}'; font-style: {}; font-weight: {}; font-display: swap; src: url(\"{url}\") format('woff2'); }}", face.style, face.weight)
+            .expect("writing to a String cannot fail");
+    }
+    write_if_changed(destination, css.as_bytes())
+}
+
 /// Materialize the optional Tailwind v4 `@theme inline` bindings for the runtime
 /// Catppuccin palette. Import this generated file from the site's CSS entrypoint.
 /// The parent directory must exist. Identical files are left untouched.
