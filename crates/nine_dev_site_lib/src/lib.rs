@@ -5,6 +5,8 @@ pub mod assets;
 pub mod browser;
 pub mod catalog;
 pub mod icon_link;
+#[cfg(feature = "server")]
+pub mod server;
 #[cfg(feature = "axum")]
 pub mod serving;
 #[cfg(feature = "startup")]

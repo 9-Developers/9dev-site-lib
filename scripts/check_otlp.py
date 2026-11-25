@@ -1,5 +1,7 @@
 """Exercise the built server using a local OTLP receiver; no cloud credentials."""
 
+from __future__ import annotations
+
 import argparse
 import http.client
 import http.server
@@ -13,6 +15,7 @@ import threading
 import time
 from collections import Counter
 from contextlib import closing
+from dataclasses import dataclass
 from pathlib import Path
 
 from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import (
@@ -28,6 +31,7 @@ from opentelemetry.proto.metrics.v1.metrics_pb2 import (
 ROOT = Path(__file__).resolve().parents[1]
 RECEIVED = []
 ARRIVAL = threading.Condition()
+LABELED_METHODS = {"GET", "POST", "HEAD", "PUT", "DELETE", "PATCH", "OPTIONS"}
 
 
 class Receiver(http.server.BaseHTTPRequestHandler):
@@ -51,18 +55,23 @@ def free_port():
         return sock.getsockname()[1]
 
 
-def fetch(port, path="/health"):
+@dataclass(frozen=True)
+class Case:
+    path: str
+    route: str
+    status: int
+    method: str = "GET"
+    form: str | None = None
+
+
+def fetch(port, path="/health", method="GET", form=None):
     # Connect directly to loopback without proxy or redirect handling.
+    headers = {"Authorization": "Bearer private-input", "Cookie": "private-input"}
+    if form is not None:
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
     connection = http.client.HTTPConnection("127.0.0.1", port, timeout=1)
     with closing(connection):
-        connection.request(
-            "GET",
-            path,
-            headers={
-                "Authorization": "Bearer private-input",
-                "Cookie": "private-input",
-            },
-        )
+        connection.request(method, path, body=form, headers=headers)
         with connection.getresponse() as response:
             return response.status
 
@@ -205,10 +214,18 @@ def exercise(
                 expected = Counter()
 
                 def send(cases):
-                    for path, route, status in cases:
-                        actual = fetch(port, path)
-                        assert actual == status, (path, actual, status)
-                        expected[route, "GET", status] += 1
+                    for case in cases:
+                        actual = fetch(port, case.path, case.method, case.form)
+                        assert actual == case.status, (
+                            case.method,
+                            case.path,
+                            actual,
+                            case.status,
+                        )
+                        method = (
+                            case.method if case.method in LABELED_METHODS else "OTHER"
+                        )
+                        expected[case.route, method, case.status] += 1
 
                 if live_service:
                     for _ in range(2):
@@ -234,6 +251,7 @@ def exercise(
                 if live_service:
                     expect_metrics(live_service, expected)
             assert "private-input" not in out + err
+            assert "PRIVATE-METHOD" not in out + err
             assert "dummy-credential" not in out + err
             assert "secret-marker" not in out + err
             if not invalid:
@@ -254,23 +272,39 @@ if __name__ == "__main__":
         help="exercise Fulla using a migrated DATABASE_URL",
     )
     target.add_argument(
-        "--server", type=Path, metavar="BINARY", help="exercise a site's own GET cases"
+        "--server",
+        type=Path,
+        metavar="BINARY",
+        help="exercise a site's own request cases",
     )
     parser.add_argument("--service", help="expected default service.name for --server")
     parser.add_argument(
         "--get", nargs=3, action="append", metavar=("PATH", "ROUTE_LABEL", "STATUS")
     )
+    parser.add_argument(
+        "--request",
+        nargs=5,
+        action="append",
+        metavar=("METHOD", "PATH", "FORM", "ROUTE_LABEL", "STATUS"),
+        help="send a request with a URL-encoded form (use an empty argument for no body)",
+    )
     args = parser.parse_args()
     if args.server:
-        if not args.service or not args.get:
+        if not args.service or not (args.get or args.request):
             parser.error(
-                "--server requires --service and at least one --get PATH ROUTE_LABEL STATUS"
+                "--server requires --service and at least one --get or --request"
             )
         service = args.service
-        traffic = [(path, label, int(status)) for path, label, status in args.get]
+        traffic = [
+            Case(path, label, int(status)) for path, label, status in args.get or []
+        ]
+        traffic.extend(
+            Case(path, label, int(status), method, form or None)
+            for method, path, form, label, status in args.request or []
+        )
     else:
-        if args.get or args.service:
-            parser.error("--get and --service require --server")
+        if args.get or args.request or args.service:
+            parser.error("--get, --request and --service require --server")
         service = "fulla.fyi" if args.fulla else "telemetry-smoke"
         path, route = (
             ("/licenses", "/licenses")
@@ -278,26 +312,32 @@ if __name__ == "__main__":
             else ("/items/private-input", "/items/{id}")
         )
         traffic = [
-            (path + "?private-input=private-input", route, 200),
-            ("/private-input", "unmatched", 404),
+            Case(path + "?private-input=private-input", route, 200),
+            Case("/private-input", "unmatched", 404),
+            Case(path, route, 405, "PRIVATE-METHOD"),
         ]
         if args.fulla:
-            traffic.append(("/site.webmanifest", "static", 200))
+            traffic.extend(
+                [
+                    Case("/site.webmanifest", "static", 200),
+                    Case("/static/private-input", "static", 404),
+                    Case("/login", "/login", 422, "POST", "identifier=private-input"),
+                ]
+            )
     example = not (args.server or args.fulla)
     binary = (
         args.server or args.fulla or ROOT / "target/debug/examples/telemetry_smoke"
     ).resolve()
-    stop_signal = signal.SIGINT if example else signal.SIGTERM
     receiver = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Receiver)
     worker = threading.Thread(target=receiver.serve_forever, daemon=True)
     worker.start()
     try:
-        exercise(binary, traffic, stop_signal, {})
+        exercise(binary, traffic, signal.SIGINT, {})
         assert not RECEIVED, "export should be disabled by default"
         expected = exercise(
             binary,
             traffic,
-            stop_signal,
+            signal.SIGTERM,
             {
                 "OTEL_EXPORTER_OTLP_ENDPOINT": f"http://127.0.0.1:{receiver.server_port}/otlp",
                 "OTEL_EXPORTER_OTLP_HEADERS": "Authorization=Basic dummy-credential",
@@ -323,6 +363,7 @@ if __name__ == "__main__":
                 assert b"smoke-version" in body
                 assert b"local-only event" not in body
             assert b"private-input" not in body and b"dummy-credential" not in body
+            assert b"PRIVATE-METHOD" not in body
             assert b"/health" not in body
         assert exported_requests == expected, (exported_requests, expected)
         if example:
@@ -333,7 +374,7 @@ if __name__ == "__main__":
         exercise(
             binary,
             traffic,
-            stop_signal,
+            signal.SIGTERM,
             {
                 "OTEL_EXPORTER_OTLP_ENDPOINT": "https://secret-marker:password@example.com"
             },
@@ -342,7 +383,7 @@ if __name__ == "__main__":
         exercise(
             binary,
             traffic,
-            stop_signal,
+            signal.SIGTERM,
             {"OTEL_EXPORTER_OTLP_ENDPOINT": f"http://127.0.0.1:{free_port()}/otlp"},
         )
         print(

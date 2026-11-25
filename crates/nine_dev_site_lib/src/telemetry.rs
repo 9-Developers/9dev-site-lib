@@ -5,8 +5,9 @@ use std::{
 };
 
 use axum::{
+    Router,
     extract::{MatchedPath, Request, State},
-    middleware::Next,
+    middleware::{self, Next},
     response::Response,
 };
 use opentelemetry::{
@@ -17,6 +18,8 @@ use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_otlp::{Protocol, WithExportConfig, WithHttpConfig};
 use opentelemetry_sdk::{Resource, logs::SdkLoggerProvider, metrics::SdkMeterProvider};
 use tracing_subscriber::{EnvFilter, filter::filter_fn, prelude::*};
+
+use crate::catalog::SiteCatalog;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -256,6 +259,7 @@ pub struct RequestMetrics {
     count: Option<Counter<u64>>,
     duration: Option<Histogram<f64>>,
     classify: Option<RouteOverride>,
+    catalog: Option<&'static SiteCatalog>,
 }
 
 /// Map site-specific paths (e.g. a catch-all or a stable favicon) to a finite
@@ -263,6 +267,16 @@ pub struct RequestMetrics {
 pub type RouteOverride = fn(matched: Option<&str>, path: &str) -> Option<&'static str>;
 
 impl RequestMetrics {
+    /// Observe the finished router, including its fallback. Classify matched
+    /// catalog aliases as `static`. A site's explicit route override takes precedence.
+    pub fn instrument<S>(mut self, router: Router<S>, catalog: &'static SiteCatalog) -> Router<S>
+    where
+        S: Clone + Send + Sync + 'static,
+    {
+        self.catalog = Some(catalog);
+        router.layer(middleware::from_fn_with_state(self, observe))
+    }
+
     #[must_use]
     pub fn with_route_override(mut self, classify: RouteOverride) -> Self {
         self.classify = Some(classify);
@@ -274,6 +288,7 @@ impl RequestMetrics {
             return Self::default();
         };
         Self {
+            catalog: None,
             classify: None,
             count: Some(
                 meter
@@ -313,7 +328,13 @@ pub async fn observe(
         .classify
         .and_then(|classify| classify(pattern, request.uri().path()))
         .unwrap_or_else(|| match pattern {
-            Some(path) if path.starts_with("/static/") || path.starts_with("/.well-known/") => {
+            Some(path)
+                if path.starts_with("/static/")
+                    || path.starts_with("/.well-known/")
+                    || metrics
+                        .catalog
+                        .is_some_and(|c| c.alias_by_url(path).is_some()) =>
+            {
                 "static"
             }
             Some(path) => path,

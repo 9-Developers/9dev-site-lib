@@ -1,6 +1,6 @@
 //! Runtime configuration shared by the sites.
 
-use std::{env, fs, io};
+use std::{env, fs, io, net::SocketAddr};
 
 /// Load only `./.env`, preserving exported variables. Call from synchronous
 /// `main` before starting worker threads. A missing file is fine.
@@ -56,13 +56,13 @@ pub fn optional_env(name: &str) -> io::Result<Option<String>> {
     }
 }
 
-/// Read the HTTP listen port, defaulting to 3000 when `PORT` is absent.
+/// Read the HTTP listen port, defaulting to 8080 when `PORT` is absent.
 ///
 /// # Errors
 /// An explicitly supplied port must be a Unicode integer in `1..=65535`.
 pub fn port() -> io::Result<u16> {
     match optional_env("PORT")? {
-        None => Ok(3000),
+        None => Ok(8080),
         Some(value) => value
             .parse::<std::num::NonZeroU16>()
             .map(std::num::NonZeroU16::get)
@@ -73,4 +73,17 @@ pub fn port() -> io::Result<u16> {
                 )
             }),
     }
+}
+
+/// Read `HOST` and `PORT`, defaulting to `0.0.0.0:8080`.
+///
+/// # Errors
+/// `HOST` must be an IPv4 or unbracketed IPv6 literal and `PORT` a nonzero `u16`.
+pub fn listen_addr() -> io::Result<SocketAddr> {
+    let host = optional_env("HOST")?;
+    let ip =
+        host.as_deref().unwrap_or("0.0.0.0").parse().map_err(|_| {
+            io::Error::new(io::ErrorKind::InvalidInput, "HOST must be an IP address")
+        })?;
+    Ok(SocketAddr::new(ip, port()?))
 }

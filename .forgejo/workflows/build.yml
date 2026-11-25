@@ -36,7 +36,7 @@ jobs:
 
       - name: Check local OTLP export
         run: |
-          cargo build --locked -p nine_dev_site_lib --features telemetry --example telemetry_smoke
+          cargo build --locked -p nine_dev_site_lib --features server --example telemetry_smoke
           python3 scripts/check_otlp.py
 
       - name: Build

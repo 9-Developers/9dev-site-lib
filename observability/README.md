@@ -37,9 +37,10 @@ metric export intervals (normally about two minutes) for the rate panels.
 The dashboard uses the same `http.server.requests` counter and
 `http.server.request.duration` histogram (seconds, to response headers) as
 Valorant Randomizer. The only request dimensions are route pattern, method,
-and status. Probe traffic is excluded; assets and errors are included. For a
-site with catch-all or stable asset routes, use `RequestMetrics::with_route_override`
-to return a fixed category such as `static` or `unmatched`. Never use slugs,
+and status. Probe traffic is excluded; assets and errors are included. Use
+`requests.instrument(router, &CATALOG)` on the completed router to group stable
+asset aliases under `static`. For site-specific exceptions, call
+`with_route_override` first and return a fixed category. Never use slugs,
 share tokens, query strings, or other client input as labels. Additional
 application log targets are selected by the caller; request middleware never
 exports bodies, headers, or client addresses.
@@ -58,11 +59,11 @@ Install the OTLP protobuf bindings in a Python virtual environment
 `devel/py-opentelemetry-proto`. From the library checkout:
 
 ```sh
-cargo build --locked -p nine_dev_site_lib --features telemetry --example telemetry_smoke
+cargo build --locked -p nine_dev_site_lib --features server --example telemetry_smoke
 python3 scripts/check_otlp.py
 ```
 
-The smoke test sends two rounds of GETs and decodes what reaches a loopback OTLP
+The smoke test sends two rounds of requests and decodes what reaches a loopback OTLP
 receiver. The request counter and latency histogram count must both increase
 while the server is running. It also checks the exported request logs, route
 labels, health-probe exclusion, and final flush on shutdown. It uses dummy
@@ -72,13 +73,14 @@ To check Fulla, build the binary, export `DATABASE_URL` for a disposable
 PostgreSQL database, apply migrations with `fulla_fyi migrate`, and run
 `python3 scripts/check_otlp.py --fulla /path/to/fulla_fyi`.
 For another server using the shared telemetry, supply its default service name
-and one `--get PATH ROUTE_LABEL STATUS` per request. For example, against an
+and repeat `--get PATH ROUTE_LABEL STATUS` or
+`--request METHOD PATH FORM ROUTE_LABEL STATUS` (use `''` for no body). Against an
 Ixirsii binary and an empty, migrated database:
 
 ```sh
 python3 scripts/check_otlp.py --server /path/to/ixirsii-tech --service ixirsii.tech \
   --get /blog /blog 200 --get /blog/private-input '/blog/{slug}' 404 \
-  --get /site.webmanifest static 200
+  --get /site.webmanifest static 200 --request PUT /blog '' /blog 405
 ```
 
 The dashboard and smoke test are adapted from Valorant Randomizer, copyright

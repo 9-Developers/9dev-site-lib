@@ -13,7 +13,7 @@ own assets at build time.
 
 ## Loading server configuration
 
-Enable the `startup` feature of `nine_dev_site_lib` (0.6 or later). Load
+Enable the `startup` feature of `nine_dev_site_lib` (0.12 or later). Load
 `./.env` from synchronous `main`, before starting Tokio or other threads:
 
 ```rust
@@ -21,35 +21,41 @@ use nine_dev_site_lib::startup;
 
 fn main() -> std::io::Result<()> {
     startup::load_local_dotenv()?;
-    let port = startup::port()?;
-    println!("Listening on port {port}");
+    let address = startup::listen_addr()?;
+    println!("Configured listen address: {address}");
     Ok(())
 }
 ```
 
 A missing file is fine; parent directories are never searched. Exported
-variables take precedence. `port()` uses `3000` when `PORT` is absent and
-rejects empty or out-of-range values. For other settings, `optional_env("HOST")?`
-returns `None` for an absent variable and an error for a non-Unicode value.
-||||||| 94ce0b3
+variables take precedence. `HOST` accepts an IPv4 or unbracketed IPv6 address
+and defaults to `0.0.0.0`. `PORT` accepts `1`–`65535` and defaults to `8080`.
+To retain the pre-0.12 default, set `PORT=3000`. Invalid values fail startup.
 
 ## HTTP telemetry for Grafana Cloud
 
-Enable `nine_dev_site_lib = { version = "0.7", features = ["telemetry"] }`
-for structured JSON request logs and optional OTLP log and metric export.
-Initialize it in synchronous `main`, after loading the site's environment:
+Use `nine_dev_site_lib = { version = "0.12", features = ["server"] }` to
+run an Axum server with graceful shutdown, JSON logs, and optional OTLP export.
+Load the environment and dispatch any CLI commands before starting the server:
 
 ```rust
-let telemetry = nine_dev_site_lib::telemetry::Telemetry::init(
+use nine_dev_site_lib::{server, telemetry::Telemetry};
+
+let telemetry = Telemetry::init(
     "example.org", env!("CARGO_PKG_VERSION"), &[env!("CARGO_CRATE_NAME")],
 )?;
-let result = run_server(telemetry.requests()); // starts Tokio and returns after HTTP drains
-telemetry.shutdown();
-result
+server::run(telemetry, async move |server| -> std::io::Result<()> {
+    let app = server.requests.instrument(app, &CATALOG);
+    let listener = tokio::net::TcpListener::bind(server.address).await?;
+    axum::serve(listener, app).with_graceful_shutdown(server.shutdown).await
+})?;
 ```
 
-Inside `run_server`, attach `axum::middleware::from_fn_with_state(requests,
-nine_dev_site_lib::telemetry::observe)` to the completed router using `.layer(...)`.
+Here `app` is the completed router and `CATALOG` is the site's
+[asset catalog](#registering-site-assets-and-mounting-their-routes).
+On Unix, SIGINT or SIGTERM drains HTTP requests before telemetry is flushed.
+If you supply your own runtime, the standalone `telemetry` feature still
+provides `Telemetry::init`, request middleware, and `Telemetry::shutdown`.
 The service logs to stdout without Grafana credentials. See the
 [Grafana setup guide and shared dashboard](observability/README.md) for remote export.
 
