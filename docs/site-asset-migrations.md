@@ -1,24 +1,31 @@
-# Migrating the remaining site assets
+# Site asset URL contracts
 
-Fulla is the first consumer. After the build helper and runtime changes are
-released, migrate each other site independently:
+All three sites declare their public assets in `build.rs` with `catalog::write`
+and mount them with `serving::asset_router`. Each generates font faces before
+compiling Tailwind, so the stylesheet references the fingerprinted font bytes.
 
-- **ixirsii.tech:** replace the per-file `ASSET_URL_*` / `ASSET_HASH_*`
-  variables and hand-maintained `STATIC_ASSETS`, `STABLE`, and discovery
-  tables with `catalog::write` and `serving::asset_router`. Generate the four
-  font faces with the build helper before compiling Tailwind. Preserve both
-  stable Android icon aliases and their immutable URLs, the stable manifest,
-  and both URLs for each explicitly published `.well-known` file (one-hour
-  freshness on discovery paths). Update the dotfiles snapshot refresh script
-  so adding screenshots no longer edits Rust catalog entries.
-- **limpdick.io:** replace the generated image index, named tables, and root
-  catch-all with `Directory("images")`, named registrations, and the shared
-  asset router. Use fingerprinted font URLs in CSS but retain existing stable
-  font, notice, icon, and manifest URLs with ETag revalidation. Preserve the
-  theme preference migration. Revisit the catch-all telemetry override and
-  its `/robots.txt` label when moving unmatched pages to the page fallback.
+| Registration | HTTP behavior |
+| --- | --- |
+| `File` or `Directory` | Fingerprinted `/static/` URL; one year of immutable caching. An unknown or stale hash returns 404 without an asset cache header. |
+| `Revalidate` | Exact stable URL; `public, max-age=0, must-revalidate` and a content ETag. |
+| `MaxAge` | Exact stable URL; `public, max-age=N` and a content ETag. |
 
-Before switching either router, record existing public URLs and compare them
-against the generated catalog. Exercise GET and HEAD on immutable URLs,
-encoded filenames, stable aliases and discovery documents. Check 304 headers,
-stale hashes, page vs. static 404s, and the resulting bounded telemetry labels.
+GET and HEAD on stable URLs honor `If-None-Match`: a match returns an empty
+304 with the same ETag and cache policy. Paths outside `/static/` and the
+registered aliases go to the site's own router.
+
+## Site-specific URLs
+
+- **fulla.fyi:** `/site.webmanifest`, `/favicon.ico`, `/icon-180.png`,
+  `/icon-192.png`, and `/icon-512.png` are stable and revalidate. Fonts and
+  site images use immutable URLs. No `/.well-known/` wildcard is mounted.
+- **ixirsii.tech:** `/site.webmanifest` is stable. The 192px and 512px
+  Android icons have both revalidating root URLs and immutable URLs.
+  `/.well-known/security.txt` is the **only** URL for `security.txt`; its
+  former fingerprinted URL returns 404. `/.well-known/bimi/logo.svg` also has
+  an immutable URL. Both discovery paths have one-hour freshness and ETags.
+  Dotfiles screenshots are indexed from `public/dotfiles/screenshots/`.
+- **limpdick.io:** CSS uses immutable font URLs. Existing `/fonts/` URLs
+  for the four fonts and `NOTICE.txt` still revalidate, as do the manifest
+  and root icon URLs. Unknown pages use the styled page fallback. Telemetry
+  labels `/robots.txt` as `static` even though it returns 404.

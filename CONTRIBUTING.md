@@ -225,5 +225,5 @@ This guide is based on the **contributing.md**. [Make your own][9]!
 
 ## Downstream integration
 
-See [site asset migrations](docs/site-asset-migrations.md) for the remaining
-Ixirsii and Valorant Randomizer rollout and URL compatibility requirements.
+See [site asset URL contracts](docs/site-asset-migrations.md) for the routing,
+cache behavior, and stable URLs to preserve across all three sites.
