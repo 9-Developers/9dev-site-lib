@@ -53,6 +53,23 @@ nine_dev_site_lib::telemetry::observe)` to the completed router using `.layer(..
 The service logs to stdout without Grafana credentials. See the
 [Grafana setup guide and shared dashboard](observability/README.md) for remote export.
 
+## Browser response headers
+
+With `nine_dev_site_lib` 0.11 and its `axum` feature, apply the policy after
+mounting your routes, assets, and fallback:
+
+```rust
+use axum::middleware::map_response;
+use nine_dev_site_lib::browser::security_headers;
+
+let app = app.layer(map_response(security_headers));
+```
+
+The policy restricts resources and form submissions to the same origin, blocks
+objects, base URLs and framing, and disables MIME sniffing. `Referrer-Policy`
+defaults to `strict-origin-when-cross-origin`; a route can set `same-origin`,
+for example. Routes retain control of caching and ETags.
+
 ## Using the shared icons
 
 Add `nine_dev_site_lib` to the site's `[dependencies]`. Use `assets::icons` for

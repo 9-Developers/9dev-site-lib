@@ -1,6 +1,8 @@
 //! Shared browser assets and optional server helpers for 9 Developers websites.
 
 pub mod assets;
+#[cfg(feature = "axum")]
+pub mod browser;
 pub mod catalog;
 pub mod icon_link;
 #[cfg(feature = "axum")]
