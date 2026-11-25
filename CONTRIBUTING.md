@@ -222,8 +222,3 @@ This guide is based on the **contributing.md**. [Make your own][9]!
 [7]: https://github.com/colinkeenan/silentcast
 [8]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
 [9]: https://contributing.md/
-
-## Downstream integration
-
-See [site asset URL contracts](docs/site-asset-migrations.md) for the routing,
-cache behavior, and stable URLs to preserve across all three sites.
