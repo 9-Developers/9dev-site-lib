@@ -131,7 +131,8 @@ Link the palette before your site's stylesheet and serve it through `assets::loo
 Use `var(--ctp-base)` for a background, `var(--ctp-text)` for text, or any of
 the 26 `--ctp-*` colors. Set `data-theme` on `<html>` to `latte`, `frappe`,
 `macchiato`, or `mocha`. A missing or unrecognized theme defaults to Mocha.
-The palette works without JavaScript or Tailwind.
+Native form controls and scrollbars use a light color scheme for Latte and a
+dark one for the other flavors. The palette works without JavaScript or Tailwind.
 
 ## Compact theme switcher
 

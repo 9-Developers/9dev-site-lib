@@ -2,6 +2,7 @@
 @layer theme {
   :where(:root),
   [data-theme="mocha"] {
+    color-scheme: dark;
     --ctp-rosewater: oklch(0.9226 0.0238 30.4919);
     --ctp-flamingo: oklch(0.8797 0.0418 17.975);
     --ctp-pink: oklch(0.87 0.0752 336.3041);
@@ -31,6 +32,7 @@
   }
 
   [data-theme="latte"] {
+    color-scheme: light;
     --ctp-rosewater: oklch(0.7141 0.1045 33.0967);
     --ctp-flamingo: oklch(0.6856 0.1259 20.867);
     --ctp-pink: oklch(0.7256 0.1739 338.4333);
@@ -60,6 +62,7 @@
   }
 
   [data-theme="frappe"] {
+    color-scheme: dark;
     --ctp-rosewater: oklch(0.8955 0.0335 31.5996);
     --ctp-flamingo: oklch(0.8439 0.0553 18.3066);
     --ctp-pink: oklch(0.8504 0.0892 336.2633);
@@ -89,6 +92,7 @@
   }
 
   [data-theme="macchiato"] {
+    color-scheme: dark;
     --ctp-rosewater: oklch(0.9105 0.0286 31.1326);
     --ctp-flamingo: oklch(0.8629 0.0479 18.1203);
     --ctp-pink: oklch(0.8608 0.083 336.1799);
