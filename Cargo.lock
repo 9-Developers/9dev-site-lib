@@ -757,6 +757,16 @@ dependencies = [
 [[package]]
 name = "nine_dev_site_build"
 version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16c42256b2ac74c487149223e55ab5eb07ff62d2900fae38c76945970ecf27c2"
+dependencies = [
+ "percent-encoding",
+ "sha2",
+]
+
+[[package]]
+name = "nine_dev_site_build"
+version = "1.0.0-rc.1"
 dependencies = [
  "percent-encoding",
  "sha2",
@@ -770,7 +780,7 @@ dependencies = [
  "axum",
  "dotenvy",
  "mime_guess",
- "nine_dev_site_build",
+ "nine_dev_site_build 0.2.4",
  "opentelemetry",
  "opentelemetry-appender-tracing",
  "opentelemetry-otlp",
@@ -1231,9 +1241,9 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.11.1"
+version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47d7069beb7d6ac7b9acd1039986e73443f24234f41074da099d6f994ac9ad19"
+checksum = "5b0e5c7d67bc53f435386b2130fdc900488c5703770f6d8a4633060e34288a27"
 dependencies = [
  "cfg-if",
  "cpufeatures",

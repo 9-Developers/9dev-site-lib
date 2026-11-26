@@ -29,6 +29,9 @@ telemetry = [
   "dep:tracing-subscriber",
 ]
 
+[build-dependencies]
+nine_dev_site_build = { version = "0.2.4" }
+
 [dependencies]
 dotenvy = { version = "0.15.7", optional = true }
 tokio = { version = "1", optional = true, features = [
@@ -70,9 +73,6 @@ askama = { version = "0.16", default-features = false, features = [
   "derive",
   "std",
 ] }
-
-[build-dependencies]
-nine_dev_site_build = { path = "../nine_dev_site_build", version = "0.2" }
 
 [dev-dependencies]
 sha2 = "0.11"
