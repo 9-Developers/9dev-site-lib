@@ -756,16 +756,6 @@ dependencies = [
 
 [[package]]
 name = "nine_dev_site_build"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16c42256b2ac74c487149223e55ab5eb07ff62d2900fae38c76945970ecf27c2"
-dependencies = [
- "percent-encoding",
- "sha2",
-]
-
-[[package]]
-name = "nine_dev_site_build"
 version = "1.0.0-rc.1"
 dependencies = [
  "percent-encoding",
@@ -780,7 +770,7 @@ dependencies = [
  "axum",
  "dotenvy",
  "mime_guess",
- "nine_dev_site_build 0.2.4",
+ "nine_dev_site_build",
  "opentelemetry",
  "opentelemetry-appender-tracing",
  "opentelemetry-otlp",

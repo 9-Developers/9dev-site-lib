@@ -30,7 +30,7 @@ telemetry = [
 ]
 
 [build-dependencies]
-nine_dev_site_build = { version = "0.2.4" }
+nine_dev_site_build = { path = "../nine_dev_site_build", version = "1.0.0-rc.1" }
 
 [dependencies]
 dotenvy = { version = "0.15.7", optional = true }
