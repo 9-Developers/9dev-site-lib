@@ -8,7 +8,7 @@ const { packages } = JSON.parse(execFileSync('cargo', [
 ], { encoding: 'utf8' }));
 
 const target = packages.find(({ name, version, publish }) =>
-  tag === `${name}-v${version}` && /^\d+\.\d+\.\d+$/.test(version) &&
+  tag === `${name}-v${version}` &&
   (!publish || publish.includes('crates-io'))
 );
 if (!target) throw new Error(`No publishable workspace crate matches release tag: ${tag}`);
